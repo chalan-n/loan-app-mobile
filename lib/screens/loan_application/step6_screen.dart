@@ -1,842 +1,135 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/glass_card.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// 📝 Step 6 Screen - ข้อมูลรถยนต์
-/// จัดการข้อมูลรถยนต์ที่ต้องการทำสินเชื่อ
+/// 🛡️ Step 6 - ประกันภัย
 class Step6Screen extends StatefulWidget {
   final Map<String, dynamic> formData;
   final VoidCallback onNext;
   final VoidCallback onPrevious;
 
-  const Step6Screen({
-    super.key,
-    required this.formData,
-    required this.onNext,
-    required this.onPrevious,
-  });
+  const Step6Screen({super.key, required this.formData, required this.onNext, required this.onPrevious});
 
   @override
   State<Step6Screen> createState() => _Step6ScreenState();
 }
 
 class _Step6ScreenState extends State<Step6Screen> {
-  final _formKey = GlobalKey<FormState>();
-  
-  // Controllers for Car Information
-  final _carBrandController = TextEditingController();
-  final _carModelController = TextEditingController();
-  final _carYearController = TextEditingController();
-  final _carColorController = TextEditingController();
-  final _carLicenseController = TextEditingController();
-  final _carEngineController = TextEditingController();
-  final _carChassisController = TextEditingController();
-  final _carPriceController = TextEditingController();
-  final _downPaymentController = TextEditingController();
-  final _loanAmountController = TextEditingController();
-  
-  // Dropdown values
-  String _carType = 'รถยนต์ส่วนบุคคล';
-  String _carCondition = 'รถใหม่';
-  String _carUsage = 'ส่วนบุคคล';
-  String _loanPurpose = 'ซื้อรถ';
-  String _paymentPeriod = '48 เดือน';
-  String _insuranceType = 'ประกันภัยชั้น 1';
-  
-  // Controllers for Additional Information
-  final _showroomController = TextEditingController();
-  final _showroomPhoneController = TextEditingController();
-  final _sellerNameController = TextEditingController();
-  final _sellerPhoneController = TextEditingController();
+  static const Color navy = Color(0xFF1e3a8a);
+  static const Color light = Color(0xFFf8fafc);
+  static const Color borderColor = Color(0xFFe2e8f0);
+
+  final _insuranceCompanyCtrl = TextEditingController();
+  final _insuranceTypeCtrl = TextEditingController();
+  final _insurancePremiumCtrl = TextEditingController();
+  final _insuranceSumCtrl = TextEditingController();
+  final _insuranceStartCtrl = TextEditingController();
+  final _insuranceEndCtrl = TextEditingController();
+  final _insurancePolicyCtrl = TextEditingController();
+
+  bool _hasInsurance = false;
 
   @override
   void initState() {
     super.initState();
-    _loadFormData();
-    _calculateLoanAmount();
+    final d = widget.formData;
+    _insuranceCompanyCtrl.text = d['car_insurance_company'] ?? '';
+    _insuranceTypeCtrl.text = d['car_insurance_type'] ?? '';
+    _insurancePremiumCtrl.text = d['car_insurance_premium'] ?? '';
+    _insuranceSumCtrl.text = d['car_insurance_sum'] ?? '';
+    _insuranceStartCtrl.text = d['car_insurance_start'] ?? '';
+    _insuranceEndCtrl.text = d['car_insurance_end'] ?? '';
+    _insurancePolicyCtrl.text = d['car_insurance_policy'] ?? '';
+    _hasInsurance = d['has_car_insurance'] ?? false;
   }
 
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
-  }
-
-  void _disposeControllers() {
-    _carBrandController.dispose();
-    _carModelController.dispose();
-    _carYearController.dispose();
-    _carColorController.dispose();
-    _carLicenseController.dispose();
-    _carEngineController.dispose();
-    _carChassisController.dispose();
-    _carPriceController.dispose();
-    _downPaymentController.dispose();
-    _loanAmountController.dispose();
-    _showroomController.dispose();
-    _showroomPhoneController.dispose();
-    _sellerNameController.dispose();
-    _sellerPhoneController.dispose();
-  }
-
-  void _loadFormData() {
-    // Load existing data if available
-    if (widget.formData.isNotEmpty) {
-      _carBrandController.text = widget.formData['car_brand'] ?? '';
-      _carModelController.text = widget.formData['car_model'] ?? '';
-      _carYearController.text = widget.formData['car_year'] ?? '';
-      _carColorController.text = widget.formData['car_color'] ?? '';
-      _carLicenseController.text = widget.formData['car_license'] ?? '';
-      _carEngineController.text = widget.formData['car_engine'] ?? '';
-      _carChassisController.text = widget.formData['car_chassis'] ?? '';
-      _carPriceController.text = widget.formData['car_price']?.toString() ?? '';
-      _downPaymentController.text = widget.formData['down_payment']?.toString() ?? '';
-      _loanAmountController.text = widget.formData['loan_amount']?.toString() ?? '';
-      
-      _carType = widget.formData['car_type'] ?? 'รถยนต์ส่วนบุคคล';
-      _carCondition = widget.formData['car_condition'] ?? 'รถใหม่';
-      _carUsage = widget.formData['car_usage'] ?? 'ส่วนบุคคล';
-      _loanPurpose = widget.formData['loan_purpose'] ?? 'ซื้อรถ';
-      _paymentPeriod = widget.formData['payment_period'] ?? '48 เดือน';
-      _insuranceType = widget.formData['insurance_type'] ?? 'ประกันภัยชั้น 1';
-      
-      _showroomController.text = widget.formData['showroom'] ?? '';
-      _showroomPhoneController.text = widget.formData['showroom_phone'] ?? '';
-      _sellerNameController.text = widget.formData['seller_name'] ?? '';
-      _sellerPhoneController.text = widget.formData['seller_phone'] ?? '';
-    }
-  }
-
-  void _saveFormData() {
-    widget.formData.addAll({
-      'car_brand': _carBrandController.text,
-      'car_model': _carModelController.text,
-      'car_year': _carYearController.text,
-      'car_color': _carColorController.text,
-      'car_license': _carLicenseController.text,
-      'car_engine': _carEngineController.text,
-      'car_chassis': _carChassisController.text,
-      'car_price': double.tryParse(_carPriceController.text.replaceAll(',', '')) ?? 0.0,
-      'down_payment': double.tryParse(_downPaymentController.text.replaceAll(',', '')) ?? 0.0,
-      'loan_amount': double.tryParse(_loanAmountController.text.replaceAll(',', '')) ?? 0.0,
-      'car_type': _carType,
-      'car_condition': _carCondition,
-      'car_usage': _carUsage,
-      'loan_purpose': _loanPurpose,
-      'payment_period': _paymentPeriod,
-      'insurance_type': _insuranceType,
-      'showroom': _showroomController.text,
-      'showroom_phone': _showroomPhoneController.text,
-      'seller_name': _sellerNameController.text,
-      'seller_phone': _sellerPhoneController.text,
-    });
-  }
-
-  void _calculateLoanAmount() {
-    final carPrice = double.tryParse(_carPriceController.text.replaceAll(',', '')) ?? 0.0;
-    final downPayment = double.tryParse(_downPaymentController.text.replaceAll(',', '')) ?? 0.0;
-    final loanAmount = carPrice - downPayment;
-    _loanAmountController.text = loanAmount.toStringAsFixed(2);
+  void _saveToFormData() {
+    widget.formData['car_insurance_company'] = _insuranceCompanyCtrl.text;
+    widget.formData['car_insurance_type'] = _insuranceTypeCtrl.text;
+    widget.formData['car_insurance_premium'] = _insurancePremiumCtrl.text;
+    widget.formData['car_insurance_sum'] = _insuranceSumCtrl.text;
+    widget.formData['car_insurance_start'] = _insuranceStartCtrl.text;
+    widget.formData['car_insurance_end'] = _insuranceEndCtrl.text;
+    widget.formData['car_insurance_policy'] = _insurancePolicyCtrl.text;
+    widget.formData['has_car_insurance'] = _hasInsurance;
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🚗 Car Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.directions_car,
-                        color: AppTheme.sapphireBlue,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'ข้อมูลรถยนต์',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Car Type and Condition Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ประเภทรถ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _carType,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'รถยนต์ส่วนบุคคล', child: Text('รถยนต์ส่วนบุคคล')),
-                                    DropdownMenuItem(value: 'รถยนต์บรรทุก', child: Text('รถยนต์บรรทุก')),
-                                    DropdownMenuItem(value: 'รถจักรยานยนต์', child: Text('รถจักรยานยนต์')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _carType = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'สภาพรถ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _carCondition,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'รถใหม่', child: Text('รถใหม่')),
-                                    DropdownMenuItem(value: 'รถมือสอง', child: Text('รถมือสอง')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _carCondition = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Brand and Model Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ยี่ห้อ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _carBrandController.text.isEmpty ? null : _carBrandController.text,
-                                  isExpanded: true,
-                                  hint: const Text('เลือกยี่ห้อ'),
-                                  items: _getCarBrands().map((brand) {
-                                    return DropdownMenuItem(
-                                      value: brand,
-                                      child: Text(brand),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _carBrandController.text = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'รุ่น',
-                          hint: 'กรอกรุ่นรถ',
-                          controller: _carModelController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกรุ่นรถ';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Year and Color Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'ปีที่ผลิต',
-                          hint: '2567',
-                          controller: _carYearController,
-                          keyboardType: TextInputType.number,
-                          maxLength: 4,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกปีที่ผลิต';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'สี',
-                          hint: 'กรอกสีรถ',
-                          controller: _carColorController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกสีรถ';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // License Plate
-                  GlassInputField(
-                    label: 'ทะเบียนรถ',
-                    hint: 'กข-1234 กรุงเทพมหานคร',
-                    controller: _carLicenseController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกทะเบียนรถ';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Engine and Chassis Number Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'เลขเครื่องยนต์',
-                          hint: 'กรอกเลขเครื่องยนต์',
-                          controller: _carEngineController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกเลขเครื่องยนต์';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'เลขตัวถัง',
-                          hint: 'กรอกเลขตัวถัง',
-                          controller: _carChassisController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกเลขตัวถัง';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 💰 Financial Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.monetization_on,
-                        color: AppTheme.sapphireBlue,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ข้อมูลการเงิน',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Car Price and Down Payment Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'ราคารถ (บาท)',
-                          hint: '0.00',
-                          controller: _carPriceController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.attach_money,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกราคารถ';
-                            }
-                            final amount = double.tryParse(value.replaceAll(',', ''));
-                            if (amount == null || amount <= 0) {
-                              return 'กรุณากรอกราคาที่ถูกต้อง';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) => _calculateLoanAmount(),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'เงินดาวน์ (บาท)',
-                          hint: '0.00',
-                          controller: _downPaymentController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.savings,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกเงินดาวน์';
-                            }
-                            final amount = double.tryParse(value.replaceAll(',', ''));
-                            if (amount == null || amount < 0) {
-                              return 'กรุณากรอกจำนวนเงินที่ถูกต้อง';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) => _calculateLoanAmount(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Loan Amount (Calculated)
-                  GlassInputField(
-                    label: 'วงเงินที่ขอกู้ (บาท)',
-                    hint: '0.00',
-                    controller: _loanAmountController,
-                    enabled: false, // Calculated field
-                    prefixIcon: Icons.calculate,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Loan Purpose and Payment Period Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'วัตถุประสงค์การกู้',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _loanPurpose,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'ซื้อรถ', child: Text('ซื้อรถ')),
-                                    DropdownMenuItem(value: 'รีไฟแนนซ์', child: Text('รีไฟแนนซ์')),
-                                    DropdownMenuItem(value: 'จำนำรถ', child: Text('จำนำรถ')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _loanPurpose = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ระยะเวลาผ่อนชำระ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _paymentPeriod,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: '12 เดือน', child: Text('12 เดือน')),
-                                    DropdownMenuItem(value: '24 เดือน', child: Text('24 เดือน')),
-                                    DropdownMenuItem(value: '36 เดือน', child: Text('36 เดือน')),
-                                    DropdownMenuItem(value: '48 เดือน', child: Text('48 เดือน')),
-                                    DropdownMenuItem(value: '60 เดือน', child: Text('60 เดือน')),
-                                    DropdownMenuItem(value: '72 เดือน', child: Text('72 เดือน')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _paymentPeriod = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Insurance Type
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ประกันภัย',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.deepNavy,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(12),
-                          color: AppTheme.pureWhite,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _insuranceType,
-                            isExpanded: true,
-                            items: const [
-                              DropdownMenuItem(value: 'ประกันภัยชั้น 1', child: Text('ประกันภัยชั้น 1')),
-                              DropdownMenuItem(value: 'ประกันภัยชั้น 2', child: Text('ประกันภัยชั้น 2')),
-                              DropdownMenuItem(value: 'ประกันภัยชั้น 3', child: Text('ประกันภัยชั้น 3')),
-                              DropdownMenuItem(value: 'ประกันภัยชั้น 3+', child: Text('ประกันภัยชั้น 3+')),
-                              DropdownMenuItem(value: 'พ.ร.บ.', child: Text('พ.ร.บ.เท่านั้น')),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                _insuranceType = value!;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 🏪 Seller Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.store,
-                        color: AppTheme.sapphireBlue,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ข้อมูลผู้ขาย',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Showroom Information
-                  GlassInputField(
-                    label: 'ชื่อโชว์รูม/ผู้ขาย',
-                    hint: 'กรอกชื่อโชว์รูมหรือผู้ขาย',
-                    controller: _showroomController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกชื่อผู้ขาย';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'เบอร์โทรศัพท์ผู้ขาย',
-                          hint: '02-123-4567',
-                          controller: _showroomPhoneController,
-                          keyboardType: TextInputType.phone,
-                          prefixIcon: Icons.phone,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกเบอร์โทรศัพท์';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'ชื่อผู้ติดต่อ',
-                          hint: 'ชื่อผู้ติดต่อ',
-                          controller: _sellerNameController,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 📊 Loan Summary
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.summarize,
-                        color: AppTheme.sapphireBlue,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'สรุปข้อมูลการเงิน',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppTheme.sapphireBlue.withOpacity(0.1),
-                          AppTheme.deepNavy.withOpacity(0.05),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppTheme.sapphireBlue.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildFinanceRow('ราคารถ', _carPriceController.text),
-                        const SizedBox(height: 8),
-                        _buildFinanceRow('เงินดาวน์', _downPaymentController.text),
-                        const Divider(height: 16, color: AppTheme.mediumGray),
-                        _buildFinanceRow(
-                          'วงเงินที่ขอกู้',
-                          _loanAmountController.text,
-                          isTotal: true,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildFinanceRow('ระยะเวลาผ่อนชำระ', _paymentPeriod),
-                        const SizedBox(height: 8),
-                        _buildFinanceRow('ประกันภัย', _insuranceType),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 40),
-          ],
-        ),
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSection(icon: FontAwesomeIcons.shieldHalved, title: 'ข้อมูลประกันภัย', children: [
+            _buildCheckbox('ทำประกันภัย', _hasInsurance, (v) => setState(() => _hasInsurance = v ?? false)),
+            if (_hasInsurance) ...[
+              _buildTextField('บริษัทประกัน', _insuranceCompanyCtrl),
+              _buildTextField('ประเภทประกัน', _insuranceTypeCtrl),
+              _buildTextField('เบี้ยประกันภัย', _insurancePremiumCtrl, keyboardType: TextInputType.number),
+              _buildTextField('ทุนประกัน', _insuranceSumCtrl, keyboardType: TextInputType.number),
+              _buildTextField('วันเริ่มคุ้มครอง', _insuranceStartCtrl),
+              _buildTextField('วันสิ้นสุดความคุ้มครอง', _insuranceEndCtrl),
+              _buildTextField('เลขกรมธรรม์', _insurancePolicyCtrl),
+            ],
+          ]),
+        ],
       ),
     );
   }
 
-  Widget _buildFinanceRow(String label, String value, {bool isTotal = false}) {
-    String displayValue = value;
-    
-    // Format currency values
-    if (value.contains('.') || value.contains(',')) {
-      final amount = double.tryParse(value.replaceAll(',', '')) ?? 0.0;
-      displayValue = amount.toStringAsFixed(2).replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (Match m) => '${m[1]},',
-      );
-      if (!value.contains('บาท')) {
-        displayValue += ' บาท';
-      }
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isTotal ? AppTheme.deepNavy : AppTheme.darkGray,
-            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-          ),
+  Widget _buildSection({required IconData icon, required String title, required List<Widget> children}) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(color: light, borderRadius: BorderRadius.circular(16.r), border: Border.all(color: borderColor)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          padding: EdgeInsets.only(bottom: 8.h),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: navy, width: 3))),
+          child: Row(children: [
+            Container(width: 36.w, height: 36.w, decoration: BoxDecoration(color: navy.withOpacity(0.1), shape: BoxShape.circle), child: Center(child: Icon(icon, color: navy, size: 16.sp))),
+            SizedBox(width: 10.w),
+            Text(title, style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: navy)),
+          ]),
         ),
-        Text(
-          displayValue,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isTotal ? AppTheme.sapphireBlue : AppTheme.darkGray,
-            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-      ],
+        SizedBox(height: 16.h),
+        ...children,
+      ]),
     );
   }
 
-  List<String> _getCarBrands() {
-    return [
-      'Toyota',
-      'Honda',
-      'Isuzu',
-      'Mitsubishi',
-      'Nissan',
-      'Mazda',
-      'Ford',
-      'Chevrolet',
-      'BMW',
-      'Mercedes-Benz',
-      'Audi',
-      'Volkswagen',
-      'Hyundai',
-      'Kia',
-      'Suzuki',
-      'MG',
-      'Proton',
-      'Yamaha',
-      'Honda (Motorcycle)',
-      'Kawasaki',
-    ];
+  Widget _buildTextField(String label, TextEditingController ctrl, {TextInputType? keyboardType}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
+        SizedBox(height: 6.h),
+        TextField(
+          controller: ctrl, keyboardType: keyboardType,
+          style: GoogleFonts.kanit(fontSize: 14.sp),
+          decoration: InputDecoration(
+            filled: true, fillColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: borderColor, width: 2)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: borderColor, width: 2)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: const BorderSide(color: navy, width: 2)),
+          ),
+        ),
+      ]),
+    );
   }
+
+  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(children: [
+        Checkbox(value: value, onChanged: onChanged, activeColor: navy),
+        Text(label, style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF4b5563))),
+      ]),
+    );
+  }
+
+  @override
+  void dispose() { _saveToFormData(); _insuranceCompanyCtrl.dispose(); _insuranceTypeCtrl.dispose(); _insurancePremiumCtrl.dispose(); _insuranceSumCtrl.dispose(); _insuranceStartCtrl.dispose(); _insuranceEndCtrl.dispose(); _insurancePolicyCtrl.dispose(); super.dispose(); }
 }

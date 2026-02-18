@@ -196,58 +196,24 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
             // Right Side Icons
             Row(
               children: [
-                // Notification Bell
-                Container(
-                  width: isTablet ? 40.w : 36.w,
-                  height: isTablet ? 40.w : 36.w,
-                  decoration: BoxDecoration(
-                    color: glassWhite,
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: edgeGlow, width: 0.5),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20.r),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            Icon(FontAwesomeIcons.bell, color: Colors.white, size: isTablet ? 18.sp : 16.sp),
-                            Positioned(
-                              top: 2, right: 2,
-                              child: Container(
-                                width: 8.w, height: 8.w,
-                                decoration: const BoxDecoration(color: danger, shape: BoxShape.circle),
-                              ),
-                            ),
-                          ],
-                        ),
+                // Notification Bell — plain icon ตามต้นฉบับ
+                Stack(
+                  children: [
+                    Icon(FontAwesomeIcons.bell, color: Colors.white, size: isTablet ? 22.sp : 20.sp),
+                    Positioned(
+                      top: 0, right: 0,
+                      child: Container(
+                        width: 8.w, height: 8.w,
+                        decoration: const BoxDecoration(color: danger, shape: BoxShape.circle),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: isTablet ? 16.w : 12.w),
-                // Logout Button
+                SizedBox(width: isTablet ? 20.w : 16.w),
+                // Logout Button — plain icon ตามต้นฉบับ
                 GestureDetector(
                   onTap: _showLogoutDialog,
-                  child: Container(
-                    width: isTablet ? 40.w : 36.w,
-                    height: isTablet ? 40.w : 36.w,
-                    decoration: BoxDecoration(
-                      color: glassWhite,
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: edgeGlow, width: 0.5),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20.r),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                        child: Center(
-                          child: Icon(FontAwesomeIcons.rightFromBracket, color: Colors.white, size: isTablet ? 18.sp : 16.sp),
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: Icon(FontAwesomeIcons.rightFromBracket, color: Colors.white, size: isTablet ? 22.sp : 20.sp),
                 ),
               ],
             ),
@@ -303,33 +269,37 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
           // Action Buttons
           Row(
             children: [
-              // Refresh Button — เชื่อม BLoC
+              // Refresh Button — ปุ่มรีเฟรชตามต้นฉบับ (น้ำเงิน pill)
               GestureDetector(
                 onTap: () {
                   context.read<LoanBloc>().add(const LoadDashboardData());
                 },
                 child: Container(
-                  height: isTablet ? 36.h : 32.h,
-                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 16.w : 12.w),
+                  height: isTablet ? 40.h : 36.h,
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 20.w : 16.w),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [sapphireBlue, deepNavy]),
-                    borderRadius: BorderRadius.circular(20.r),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF3b82f6), Color(0xFF2563eb)],
+                    ),
+                    borderRadius: BorderRadius.circular(50.r),
                     boxShadow: [
-                      BoxShadow(color: sapphireBlue.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                      BoxShadow(color: const Color(0xFF3b82f6).withOpacity(0.35), blurRadius: 15, offset: const Offset(0, 4)),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FontAwesomeIcons.rotate, color: Colors.white, size: isTablet ? 14.sp : 12.sp),
-                      SizedBox(width: isTablet ? 8.w : 6.w),
-                      Text('รีเฟรช', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 12.sp, fontWeight: FontWeight.w500, color: Colors.white)),
+                      Icon(FontAwesomeIcons.rotate, color: Colors.white, size: isTablet ? 14.sp : 13.sp),
+                      SizedBox(width: isTablet ? 10.w : 8.w),
+                      Text('รีเฟรช', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
                     ],
                   ),
                 ),
               ),
               SizedBox(width: isTablet ? 12.w : 8.w),
-              // Add Button
+              // Add Button — ปุ่มเพิ่มตามต้นฉบับ (เขียว pill)
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -338,21 +308,25 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
                   );
                 },
                 child: Container(
-                  height: isTablet ? 36.h : 32.h,
-                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 16.w : 12.w),
+                  height: isTablet ? 40.h : 36.h,
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 20.w : 16.w),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [success, Color(0xFF047857)]),
-                    borderRadius: BorderRadius.circular(20.r),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF10b981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(50.r),
                     boxShadow: [
-                      BoxShadow(color: success.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                      BoxShadow(color: const Color(0xFF10b981).withOpacity(0.35), blurRadius: 15, offset: const Offset(0, 4)),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FontAwesomeIcons.plus, color: Colors.white, size: isTablet ? 14.sp : 12.sp),
-                      SizedBox(width: isTablet ? 8.w : 6.w),
-                      Text('เพิ่ม', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 12.sp, fontWeight: FontWeight.w500, color: Colors.white)),
+                      Icon(FontAwesomeIcons.plus, color: Colors.white, size: isTablet ? 14.sp : 13.sp),
+                      SizedBox(width: isTablet ? 10.w : 8.w),
+                      Text('เพิ่ม', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
                     ],
                   ),
                 ),

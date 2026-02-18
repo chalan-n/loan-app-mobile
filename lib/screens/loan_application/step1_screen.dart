@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -115,7 +116,7 @@ class _Step1ScreenState extends State<Step1Screen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -227,7 +228,7 @@ class _Step1ScreenState extends State<Step1Screen> {
 
   Widget _buildSection({required IconData icon, required String title, required List<Widget> children}) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: light,
         borderRadius: BorderRadius.circular(16.r),
@@ -245,11 +246,11 @@ class _Step1ScreenState extends State<Step1Screen> {
               children: [
                 Container(
                   width: 36.w, height: 36.w,
-                  decoration: BoxDecoration(
-                    color: navy.withOpacity(0.1),
+                  decoration: const BoxDecoration(
+                    color: navy,
                     shape: BoxShape.circle,
                   ),
-                  child: Center(child: Icon(icon, color: navy, size: 16.sp)),
+                  child: Center(child: Icon(icon, color: Colors.white, size: 16.sp)),
                 ),
                 SizedBox(width: 10.w),
                 Text(title, style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: navy)),
@@ -361,6 +362,7 @@ class _Step1ScreenState extends State<Step1Screen> {
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now().add(const Duration(days: 365 * 50)),
+      locale: const Locale('th', 'TH'),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(

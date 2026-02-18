@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // 🎨 Theme
@@ -50,6 +51,18 @@ class CMOLoanApp extends StatelessWidget {
             // ️ App Configuration
             title: 'CMO Loan App - Premium',
             debugShowCheckedModeBanner: false,
+            
+            // 🌐 Localization - รองรับภาษาไทย
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('th', 'TH'),
+              Locale('en', 'US'),
+            ],
+            locale: const Locale('th', 'TH'),
             
             // 🌟 เริ่มจาก Splash Screen
             home: const SplashScreen(),

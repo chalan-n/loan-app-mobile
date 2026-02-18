@@ -1,0 +1,35 @@
+{
+  "project_config": {
+    "name": "Luxury_Loan_Mobile",
+    "mode": "Agentic_Development",
+    "output_language": "Thai"
+  },
+  "engineering_constraints": {
+    "legacy_path": "C:/loan-app",
+    "strict_compatibility": "Enabled",
+    "api_mapping_first": true,
+    "security_protocol": "Match_Legacy_Auth"
+  },
+  "premium_ui_specs": {
+    "theme_mode": "Light",
+    "visual_identity": "Ultra-Modern Digital Banking",
+    "ui_components": [
+      "Glassmorphism_Frosted_Glass",
+      "Mesh_Gradient_Backgrounds",
+      "Soft_Layered_Shadows",
+      "High_Border_Radius_Cards (24px)"
+    ],
+    "animations": {
+      "transitions": "Smooth_Fade_Slide",
+      "feedback": "Haptic_Style_Visuals"
+    },
+    "icons": "Font_Awesome_6_Pro_Style"
+  },
+  "step_by_step_instructions": [
+    "วิเคราะห์ไฟล์ใน C:/loan-app และสร้างรายงานสรุป Endpoint ของ Web Service ในรูปแบบภาษาไทย",
+    "สร้างโครงสร้างโปรเจกต์ใหม่ที่รองรับทั้ง Android และ iOS",
+    "เขียนโค้ด UI โดยใช้ค่าสีและ Blur ตามที่กำหนดใน premium_ui_specs",
+    "เชื่อมต่อ API เข้ากับ UI โดยใช้ Logic เดียวกับต้นฉบับ",
+    "ตรวจสอบการแสดงผลบน Tablet ให้มีความหรูหราไม่แพ้มือถือ"
+  ]
+}

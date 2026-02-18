@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -363,6 +362,7 @@ class _Step1ScreenState extends State<Step1Screen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now().add(const Duration(days: 365 * 50)),
       locale: const Locale('th', 'TH'),
+      // แสดงปฏิทินเป็น พ.ศ.
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -373,12 +373,17 @@ class _Step1ScreenState extends State<Step1Screen> {
               onSurface: Color(0xFF1e293b),
             ),
           ),
-          child: child!,
+          child: Localizations.override(
+            context: context,
+            locale: const Locale('th', 'TH'),
+            child: child!,
+          ),
         );
       },
     );
 
     if (picked != null) {
+      // บันทึกเป็น ค.ศ. (DateTime ของ Flutter เป็น ค.ศ. เสมอ)
       controller.text = '${picked.day.toString().padLeft(2, '0')}/'
           '${picked.month.toString().padLeft(2, '0')}/'
           '${picked.year}';

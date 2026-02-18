@@ -171,7 +171,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   Widget _buildTitleBar() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -190,17 +190,35 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          _isEditMode
-              ? '✏️ แก้ไขคำขอสินเชื่อ'
-              : '${_getStepIcon(_currentStep)} ${_getStepTitle(_currentStep)}',
-          style: GoogleFonts.kanit(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // วงกลมไอคอนสีขาว
+          Container(
+            width: 36.w, height: 36.w,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+            ),
+            child: Center(
+              child: Icon(
+                _isEditMode ? FontAwesomeIcons.penToSquare : _getStepFaIcon(_currentStep),
+                color: Colors.white,
+                size: 15.sp,
+              ),
+            ),
           ),
-        ),
+          SizedBox(width: 12.w),
+          Text(
+            _isEditMode ? 'แก้ไขคำขอสินเชื่อ' : _getStepTitle(_currentStep),
+            style: GoogleFonts.kanit(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -483,9 +501,19 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
     });
   }
 
-  String _getStepIcon(int step) {
-    const icons = ['', '👤', '🚗', '📄', '👥', '❤️', '🛡️', '💰', '✅'];
-    return icons[step];
+  IconData _getStepFaIcon(int step) {
+    const icons = [
+      FontAwesomeIcons.house,
+      FontAwesomeIcons.user,
+      FontAwesomeIcons.car,
+      FontAwesomeIcons.fileContract,
+      FontAwesomeIcons.users,
+      FontAwesomeIcons.heartPulse,
+      FontAwesomeIcons.shieldHalved,
+      FontAwesomeIcons.fileInvoiceDollar,
+      FontAwesomeIcons.clipboardCheck,
+    ];
+    return step < icons.length ? icons[step] : FontAwesomeIcons.house;
   }
 
   String _getStepTitle(int step) {

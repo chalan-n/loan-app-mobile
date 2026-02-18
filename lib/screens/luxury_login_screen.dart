@@ -179,16 +179,16 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
     );
   }
 
-  // 🌊 Mesh Gradient Background
+  // 🌊 Navy Gradient Background
   BoxDecoration _buildMeshGradientBackground() {
     return const BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          snowWhite,
-          Color(0xFFEFF6FF), // Very light blue
-          snowWhite,
+          deepNavy,
+          Color(0xFF0A3D7F),
+          sapphireBlue,
         ],
         stops: [0.0, 0.5, 1.0],
       ),
@@ -196,121 +196,92 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
   }
 
   Widget _buildFullScreenLogin(bool isTablet, bool isLargeTablet, double screenHeight) {
-    return Column(
-      children: [
-        // 🎨 Header Section - 35% พร้อม Mesh Gradient
-        Expanded(
-          flex: 35,
-          child: Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [deepNavy, sapphireBlue],
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: screenHeight),
+        child: Column(
+          children: [
+            // 🎨 Header Section - Logo + Title
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 40.h,
+                bottom: 40.h,
               ),
-            ),
-            child: Stack(
-              children: [
-                // ✨ Mesh Pattern Overlay
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: LoginMeshGradientPainter(),
-                  ),
-                ),
-
-                // 🔮 Decorative Orbs
-                Positioned(
-                  top: -30,
-                  right: -40,
-                  child: Container(
-                    width: isTablet ? 200.w : 150.w,
-                    height: isTablet ? 200.w : 150.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          sapphireBlue.withOpacity(0.3),
-                          Colors.transparent,
-                        ],
-                      ),
+              child: Stack(
+                children: [
+                  // ✨ Mesh Pattern Overlay
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: LoginMeshGradientPainter(),
                     ),
                   ),
-                ),
-                
-                // 📋 Header Content - กลางจอ
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: MediaQuery.of(context).padding.top),
-
-                      // 🎨 Logo
-                      Image.asset(
-                        'assets/images/logoml_white.png',
-                        width: isLargeTablet ? 220.w : 200.w,
-                        height: isLargeTablet ? 80.h : 70.h,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.account_balance,
-                            size: isTablet ? 50.sp : 40.sp,
-                            color: Colors.white.withOpacity(0.8),
-                          );
-                        },
-                      ),
-                      SizedBox(height: isLargeTablet ? 20.h : 14.h),
-                      
-                      // 📝 Title
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Text(
-                          'CMO APP',
-                          style: GoogleFonts.inter(
-                            fontSize: isLargeTablet ? 46.sp : 40.sp,
-                            fontWeight: FontWeight.w200,
-                            color: Colors.white,
-                            letterSpacing: 4,
+                  // 📋 Header Content
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // 🎨 Logo
+                        Image.asset(
+                          'assets/images/logoml_white.png',
+                          width: isLargeTablet ? 220.w : 200.w,
+                          height: isLargeTablet ? 80.h : 70.h,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.account_balance,
+                              size: isTablet ? 50.sp : 40.sp,
+                              color: Colors.white.withOpacity(0.8),
+                            );
+                          },
+                        ),
+                        SizedBox(height: isLargeTablet ? 20.h : 14.h),
+                        // 📝 Title
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Text(
+                            'CMO APP',
+                            style: GoogleFonts.inter(
+                              fontSize: isLargeTablet ? 46.sp : 40.sp,
+                              fontWeight: FontWeight.w200,
+                              color: Colors.white,
+                              letterSpacing: 4,
+                            ),
                           ),
                         ),
-                      ),
-
-                      SizedBox(height: 6.h),
-
-                      // 📋 Subtitle
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Text(
-                          'ระบบสินเชื่อ',
-                          style: GoogleFonts.kanit(
-                            fontSize: isLargeTablet ? 16.sp : 14.sp,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white.withOpacity(0.6),
-                            letterSpacing: 3,
+                        SizedBox(height: 6.h),
+                        // 📋 Subtitle
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Text(
+                            'ระบบสินเชื่อ',
+                            style: GoogleFonts.kanit(
+                              fontSize: isLargeTablet ? 16.sp : 14.sp,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.white.withOpacity(0.6),
+                              letterSpacing: 3,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
 
-        // 📝 Form Section - 65% Frosted Glass
-        Expanded(
-          flex: 65,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: _buildLuxuryLoginForm(isTablet, isLargeTablet),
+            // 📝 Form Section - พื้นทึบ navy
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: _buildLuxuryLoginForm(isTablet, isLargeTablet),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -415,32 +386,20 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
           style: GoogleFonts.kanit(
             fontSize: isTablet ? 18.sp : 16.sp,
             fontWeight: FontWeight.w400,
-            color: textPrimary,
+            color: Colors.white.withOpacity(0.9),
           ),
         ),
         SizedBox(height: isTablet ? 10.h : 8.h),
         
-        // 🌊 Glassmorphism Input Field
+        // 🌊 Input Field พื้นขาวโปร่งใสบน navy
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.12),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: const Color(0xFFE2E8F0),
+              color: Colors.white.withOpacity(0.25),
               width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: deepNavy.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: deepNavy.withOpacity(0.02),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
           ),
           child: TextFormField(
             controller: controller,
@@ -449,13 +408,13 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
             validator: validator,
             style: GoogleFonts.inter(
               fontSize: isTablet ? 18.sp : 16.sp,
-              color: textPrimary,
+              color: Colors.white,
               fontWeight: FontWeight.w400,
             ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.kanit(
-                color: textSecondary.withOpacity(0.6),
+                color: Colors.white.withOpacity(0.4),
                 fontSize: isTablet ? 16.sp : 14.sp,
                 fontWeight: FontWeight.w300,
               ),
@@ -463,7 +422,7 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
                 padding: EdgeInsets.only(left: 16.w, right: 12.w),
                 child: Icon(
                   icon,
-                  color: sapphireBlue.withOpacity(0.6),
+                  color: Colors.white.withOpacity(0.7),
                   size: isTablet ? 20.sp : 18.sp,
                 ),
               ),
@@ -478,7 +437,7 @@ class _LuxuryLoginScreenState extends State<LuxuryLoginScreen>
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16.r),
                 borderSide: BorderSide(
-                  color: sapphireBlue.withOpacity(0.5),
+                  color: Colors.white.withOpacity(0.6),
                   width: 1.5,
                 ),
               ),

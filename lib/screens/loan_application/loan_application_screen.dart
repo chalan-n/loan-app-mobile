@@ -44,6 +44,9 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   int _currentStep = 1;
   bool _isEditMode = false;
   final Map<String, dynamic> _formData = {};
+  
+  // เพิ่มตัวแปรป้องกันการกดซ้ำ
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -335,11 +338,16 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
             if (_currentStep > 1)
               Expanded(
                 child: GestureDetector(
-                  onTap: _previousStep,
+                  onTap: _isNavigating ? null : () {
+                    // เพิ่มการป้องกันการกดซ้ำ
+                    if (_pageController.hasClients && _currentStep > 1) {
+                      _previousStep();
+                    }
+                  },
                   child: Container(
                     height: 50.h,
                     decoration: BoxDecoration(
-                      color: gray,
+                      color: _isNavigating ? gray.withOpacity(0.5) : gray,
                       borderRadius: BorderRadius.circular(50.r),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 20, offset: const Offset(0, 8)),
@@ -348,7 +356,18 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 14.sp),
+                        // เพิ่ม Loading Indicator
+                        if (_isNavigating)
+                          SizedBox(
+                            width: 14.sp,
+                            height: 14.sp,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        else
+                          Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 14.sp),
                         SizedBox(width: 10.w),
                         Text('ย้อนกลับ', style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
                       ],
@@ -362,11 +381,22 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
             // ปุ่มถัดไป/ส่ง
             Expanded(
               child: GestureDetector(
-                onTap: _currentStep == totalSteps ? _submitApplication : _nextStep,
+                onTap: _isNavigating ? null : () {
+                  // เพิ่มการป้องกันการกดซ้ำ
+                  if (_pageController.hasClients) {
+                    if (_currentStep == totalSteps) {
+                      _submitApplication();
+                    } else {
+                      _nextStep();
+                    }
+                  }
+                },
                 child: Container(
                   height: 50.h,
                   decoration: BoxDecoration(
-                    color: _currentStep == totalSteps ? green : navy,
+                    color: _isNavigating 
+                        ? (_currentStep == totalSteps ? green.withOpacity(0.5) : navy.withOpacity(0.5))
+                        : (_currentStep == totalSteps ? green : navy),
                     borderRadius: BorderRadius.circular(50.r),
                     boxShadow: [
                       BoxShadow(color: navy.withOpacity(0.12), blurRadius: 20, offset: const Offset(0, 8)),
@@ -380,11 +410,22 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                         style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
                       ),
                       SizedBox(width: 10.w),
-                      Icon(
-                        _currentStep == totalSteps ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.arrowRight,
-                        color: Colors.white,
-                        size: 14.sp,
-                      ),
+                      // เพิ่ม Loading Indicator
+                      if (_isNavigating)
+                        SizedBox(
+                          width: 14.sp,
+                          height: 14.sp,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      else
+                        Icon(
+                          _currentStep == totalSteps ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.arrowRight,
+                          color: Colors.white,
+                          size: 14.sp,
+                        ),
                     ],
                   ),
                 ),
@@ -397,29 +438,74 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   }
 
   void _nextStep() {
-    if (_currentStep < totalSteps) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    if (_currentStep < totalSteps && !_isNavigating) {
+      setState(() {
+        _isNavigating = true;
+      });
+      
+      if (_pageController.hasClients) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOutCubic,
+        ).then((_) {
+          // Reset navigation flag after animation completes
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isNavigating = false;
+              });
+            }
+          });
+        });
+      }
     }
   }
 
   void _previousStep() {
-    if (_currentStep > 1) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    if (_currentStep > 1 && !_isNavigating) {
+      setState(() {
+        _isNavigating = true;
+      });
+      
+      if (_pageController.hasClients) {
+        _pageController.previousPage(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOutCubic,
+        ).then((_) {
+          // Reset navigation flag after animation completes
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isNavigating = false;
+              });
+            }
+          });
+        });
+      }
     }
   }
 
   void _goToStep(int step) {
-    _pageController.animateToPage(
-      step - 1,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (_pageController.hasClients && !_isNavigating) {
+      setState(() {
+        _isNavigating = true;
+      });
+      
+      _pageController.animateToPage(
+        step - 1,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
+      ).then((_) {
+        // Reset navigation flag after animation completes
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            setState(() {
+              _isNavigating = false;
+            });
+          }
+        });
+      });
+    }
   }
 
   void _submitApplication() {

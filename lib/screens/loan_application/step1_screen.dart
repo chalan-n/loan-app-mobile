@@ -40,6 +40,45 @@ class _Step1ScreenState extends State<Step1Screen> {
   final _dateOfBirthCtrl = TextEditingController();
   final _registrationDateCtrl = TextEditingController();
 
+  // Address Controllers - ที่อยู่ตามทะเบียนบ้าน
+  final _houseNumberCtrl = TextEditingController();
+  final _villageCtrl = TextEditingController();
+  final _laneCtrl = TextEditingController();
+  final _roadCtrl = TextEditingController();
+  final _subdistrictCtrl = TextEditingController();
+  final _districtCtrl = TextEditingController();
+  final _provinceCtrl = TextEditingController();
+  final _postalCodeCtrl = TextEditingController();
+
+  // Address Controllers - ที่อยู่ปัจจุบัน
+  final _currentHouseNumberCtrl = TextEditingController();
+  final _currentVillageCtrl = TextEditingController();
+  final _currentLaneCtrl = TextEditingController();
+  final _currentRoadCtrl = TextEditingController();
+  final _currentSubdistrictCtrl = TextEditingController();
+  final _currentDistrictCtrl = TextEditingController();
+  final _currentProvinceCtrl = TextEditingController();
+  final _currentPostalCodeCtrl = TextEditingController();
+
+  // Work Address Controllers
+  final _workAddressCtrl = TextEditingController();
+  final _workSubdistrictCtrl = TextEditingController();
+  final _workDistrictCtrl = TextEditingController();
+  final _workProvinceCtrl = TextEditingController();
+  final _workPostalCodeCtrl = TextEditingController();
+  final _workPhoneCtrl = TextEditingController();
+
+  // Document Delivery Address Controllers
+  bool _deliverySameAsRegistered = true;
+  final _deliveryHouseNumberCtrl = TextEditingController();
+  final _deliveryVillageCtrl = TextEditingController();
+  final _deliveryLaneCtrl = TextEditingController();
+  final _deliveryRoadCtrl = TextEditingController();
+  final _deliverySubdistrictCtrl = TextEditingController();
+  final _deliveryDistrictCtrl = TextEditingController();
+  final _deliveryProvinceCtrl = TextEditingController();
+  final _deliveryPostalCodeCtrl = TextEditingController();
+
   // Dropdown values
   String _borrowerType = 'individual';
   String _prefix = 'นาย';
@@ -83,6 +122,42 @@ class _Step1ScreenState extends State<Step1Screen> {
     _religion = d['religion'] ?? 'พุทธ';
     _creditBureauStatus = d['credit_bureau_status'] ?? 'ปกติ';
     _incomeSource = d['income_source'] ?? 'เงินเดือน';
+    
+    // Load address data
+    _houseNumberCtrl.text = d['house_number'] ?? '';
+    _villageCtrl.text = d['village'] ?? '';
+    _laneCtrl.text = d['lane'] ?? '';
+    _roadCtrl.text = d['road'] ?? '';
+    _subdistrictCtrl.text = d['subdistrict'] ?? '';
+    _districtCtrl.text = d['district'] ?? '';
+    _provinceCtrl.text = d['province'] ?? '';
+    _postalCodeCtrl.text = d['postal_code'] ?? '';
+    
+    _currentHouseNumberCtrl.text = d['current_house_number'] ?? '';
+    _currentVillageCtrl.text = d['current_village'] ?? '';
+    _currentLaneCtrl.text = d['current_lane'] ?? '';
+    _currentRoadCtrl.text = d['current_road'] ?? '';
+    _currentSubdistrictCtrl.text = d['current_subdistrict'] ?? '';
+    _currentDistrictCtrl.text = d['current_district'] ?? '';
+    _currentProvinceCtrl.text = d['current_province'] ?? '';
+    _currentPostalCodeCtrl.text = d['current_postal_code'] ?? '';
+    
+    _workAddressCtrl.text = d['work_address'] ?? '';
+    _workSubdistrictCtrl.text = d['work_subdistrict'] ?? '';
+    _workDistrictCtrl.text = d['work_district'] ?? '';
+    _workProvinceCtrl.text = d['work_province'] ?? '';
+    _workPostalCodeCtrl.text = d['work_postal_code'] ?? '';
+    _workPhoneCtrl.text = d['work_phone'] ?? '';
+    
+    _deliverySameAsRegistered = d['delivery_same_as_registered'] ?? true;
+    _deliveryHouseNumberCtrl.text = d['delivery_house_number'] ?? '';
+    _deliveryVillageCtrl.text = d['delivery_village'] ?? '';
+    _deliveryLaneCtrl.text = d['delivery_lane'] ?? '';
+    _deliveryRoadCtrl.text = d['delivery_road'] ?? '';
+    _deliverySubdistrictCtrl.text = d['delivery_subdistrict'] ?? '';
+    _deliveryDistrictCtrl.text = d['delivery_district'] ?? '';
+    _deliveryProvinceCtrl.text = d['delivery_province'] ?? '';
+    _deliveryPostalCodeCtrl.text = d['delivery_postal_code'] ?? '';
   }
 
   void _saveToFormData() {
@@ -110,6 +185,42 @@ class _Step1ScreenState extends State<Step1Screen> {
     widget.formData['trade_registration_id'] = _tradeRegCtrl.text;
     widget.formData['registration_date'] = _registrationDateCtrl.text;
     widget.formData['tax_id'] = _taxIdCtrl.text;
+    
+    // Save address data
+    widget.formData['house_number'] = _houseNumberCtrl.text;
+    widget.formData['village'] = _villageCtrl.text;
+    widget.formData['lane'] = _laneCtrl.text;
+    widget.formData['road'] = _roadCtrl.text;
+    widget.formData['subdistrict'] = _subdistrictCtrl.text;
+    widget.formData['district'] = _districtCtrl.text;
+    widget.formData['province'] = _provinceCtrl.text;
+    widget.formData['postal_code'] = _postalCodeCtrl.text;
+    
+    widget.formData['current_house_number'] = _currentHouseNumberCtrl.text;
+    widget.formData['current_village'] = _currentVillageCtrl.text;
+    widget.formData['current_lane'] = _currentLaneCtrl.text;
+    widget.formData['current_road'] = _currentRoadCtrl.text;
+    widget.formData['current_subdistrict'] = _currentSubdistrictCtrl.text;
+    widget.formData['current_district'] = _currentDistrictCtrl.text;
+    widget.formData['current_province'] = _currentProvinceCtrl.text;
+    widget.formData['current_postal_code'] = _currentPostalCodeCtrl.text;
+    
+    widget.formData['work_address'] = _workAddressCtrl.text;
+    widget.formData['work_subdistrict'] = _workSubdistrictCtrl.text;
+    widget.formData['work_district'] = _workDistrictCtrl.text;
+    widget.formData['work_province'] = _workProvinceCtrl.text;
+    widget.formData['work_postal_code'] = _workPostalCodeCtrl.text;
+    widget.formData['work_phone'] = _workPhoneCtrl.text;
+    
+    widget.formData['delivery_same_as_registered'] = _deliverySameAsRegistered;
+    widget.formData['delivery_house_number'] = _deliveryHouseNumberCtrl.text;
+    widget.formData['delivery_village'] = _deliveryVillageCtrl.text;
+    widget.formData['delivery_lane'] = _deliveryLaneCtrl.text;
+    widget.formData['delivery_road'] = _deliveryRoadCtrl.text;
+    widget.formData['delivery_subdistrict'] = _deliverySubdistrictCtrl.text;
+    widget.formData['delivery_district'] = _deliveryDistrictCtrl.text;
+    widget.formData['delivery_province'] = _deliveryProvinceCtrl.text;
+    widget.formData['delivery_postal_code'] = _deliveryPostalCodeCtrl.text;
   }
 
   @override
@@ -178,6 +289,90 @@ class _Step1ScreenState extends State<Step1Screen> {
               _buildTextField('รายได้อื่น (บาท)', _otherIncomeCtrl, keyboardType: TextInputType.number),
               _buildDropdown('แหล่งรายได้', _incomeSource, ['เงินเดือน', 'ธุรกิจส่วนตัว', 'อื่นๆ'], (v) => setState(() => _incomeSource = v ?? 'เงินเดือน')),
               _buildDropdown('สถานะเครดิตบูโร', _creditBureauStatus, ['ปกติ', 'ค้างชำระ', 'อื่นๆ'], (v) => setState(() => _creditBureauStatus = v ?? 'ปกติ')),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ที่อยู่ตามทะเบียนบ้าน ===
+          _buildSection(
+            icon: FontAwesomeIcons.home,
+            title: 'ที่อยู่ตามทะเบียนบ้าน',
+            children: [
+              _buildTextField('บ้านเลขที่', _houseNumberCtrl),
+              _buildTextField('หมู่', _villageCtrl),
+              _buildTextField('ตรอก', _laneCtrl),
+              _buildTextField('ซอย', _roadCtrl),
+              _buildTextField('ถนน', _roadCtrl),
+              _buildTextField('ตำบล/แขวง', _subdistrictCtrl),
+              _buildTextField('อำเภอ/เขต', _districtCtrl),
+              _buildTextField('จังหวัด', _provinceCtrl),
+              _buildTextField('รหัสไปรษณีย์', _postalCodeCtrl, keyboardType: TextInputType.number),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ที่อยู่ปัจจุบัน ===
+          _buildSection(
+            icon: FontAwesomeIcons.locationDot,
+            title: 'ที่อยู่ปัจจุบัน',
+            children: [
+              _buildTextField('บ้านเลขที่', _currentHouseNumberCtrl),
+              _buildTextField('หมู่', _currentVillageCtrl),
+              _buildTextField('ตรอก', _currentLaneCtrl),
+              _buildTextField('ซอย', _currentRoadCtrl),
+              _buildTextField('ถนน', _currentRoadCtrl),
+              _buildTextField('ตำบล/แขวง', _currentSubdistrictCtrl),
+              _buildTextField('อำเภอ/เขต', _currentDistrictCtrl),
+              _buildTextField('จังหวัด', _currentProvinceCtrl),
+              _buildTextField('รหัสไปรษณีย์', _currentPostalCodeCtrl, keyboardType: TextInputType.number),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ที่อยู่ที่ทำงาน ===
+          _buildSection(
+            icon: FontAwesomeIcons.building,
+            title: 'ที่อยู่ที่ทำงาน',
+            children: [
+              _buildTextField('ที่อยู่', _workAddressCtrl),
+              _buildTextField('ตำบล/แขวง', _workSubdistrictCtrl),
+              _buildTextField('อำเภอ/เขต', _workDistrictCtrl),
+              _buildTextField('จังหวัด', _workProvinceCtrl),
+              _buildTextField('รหัสไปรษณีย์', _workPostalCodeCtrl, keyboardType: TextInputType.number),
+              _buildTextField('โทรศัพท์ที่ทำงาน', _workPhoneCtrl, keyboardType: TextInputType.phone),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ที่อยู่จัดส่งเอกสาร ===
+          _buildSection(
+            icon: FontAwesomeIcons.truck,
+            title: 'ที่อยู่จัดส่งเอกสาร',
+            children: [
+              _buildRadioGroup('เลือกที่อยู่จัดส่ง', _deliverySameAsRegistered ? 'registered' : 'other', {
+                'registered': 'เหมือนทะเบียนบ้าน',
+                'current': 'เหมือนที่อยู่ปัจจุบัน',
+                'other': 'ที่อยู่อื่น',
+              }, (v) {
+                setState(() {
+                  _deliverySameAsRegistered = v == 'registered';
+                });
+              }),
+              if (!_deliverySameAsRegistered) ...[
+                _buildTextField('บ้านเลขที่', _deliveryHouseNumberCtrl),
+                _buildTextField('หมู่', _deliveryVillageCtrl),
+                _buildTextField('ตรอก', _deliveryLaneCtrl),
+                _buildTextField('ซอย', _deliveryRoadCtrl),
+                _buildTextField('ถนน', _deliveryRoadCtrl),
+                _buildTextField('ตำบล/แขวง', _deliverySubdistrictCtrl),
+                _buildTextField('อำเภอ/เขต', _deliveryDistrictCtrl),
+                _buildTextField('จังหวัด', _deliveryProvinceCtrl),
+                _buildTextField('รหัสไปรษณีย์', _deliveryPostalCodeCtrl, keyboardType: TextInputType.number),
+              ],
             ],
           ),
 
@@ -408,6 +603,42 @@ class _Step1ScreenState extends State<Step1Screen> {
     _idCardExpiryDateCtrl.dispose();
     _dateOfBirthCtrl.dispose();
     _registrationDateCtrl.dispose();
+    
+    // Dispose address controllers
+    _houseNumberCtrl.dispose();
+    _villageCtrl.dispose();
+    _laneCtrl.dispose();
+    _roadCtrl.dispose();
+    _subdistrictCtrl.dispose();
+    _districtCtrl.dispose();
+    _provinceCtrl.dispose();
+    _postalCodeCtrl.dispose();
+    
+    _currentHouseNumberCtrl.dispose();
+    _currentVillageCtrl.dispose();
+    _currentLaneCtrl.dispose();
+    _currentRoadCtrl.dispose();
+    _currentSubdistrictCtrl.dispose();
+    _currentDistrictCtrl.dispose();
+    _currentProvinceCtrl.dispose();
+    _currentPostalCodeCtrl.dispose();
+    
+    _workAddressCtrl.dispose();
+    _workSubdistrictCtrl.dispose();
+    _workDistrictCtrl.dispose();
+    _workProvinceCtrl.dispose();
+    _workPostalCodeCtrl.dispose();
+    _workPhoneCtrl.dispose();
+    
+    _deliveryHouseNumberCtrl.dispose();
+    _deliveryVillageCtrl.dispose();
+    _deliveryLaneCtrl.dispose();
+    _deliveryRoadCtrl.dispose();
+    _deliverySubdistrictCtrl.dispose();
+    _deliveryDistrictCtrl.dispose();
+    _deliveryProvinceCtrl.dispose();
+    _deliveryPostalCodeCtrl.dispose();
+    
     super.dispose();
   }
 }

@@ -8,6 +8,7 @@ import 'dart:ui';
 
 import '../bloc/auth_bloc.dart';
 import '../bloc/loan_bloc.dart';
+import 'loan_application/loan_application_screen.dart';
 
 class LuxuryDashboardScreen extends StatefulWidget {
   const LuxuryDashboardScreen({super.key});
@@ -166,7 +167,7 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [deepNavy, sapphireBlue],
+          colors: [Color(0xFF1e3a8a), Color(0xFF1e40af)],
         ),
         boxShadow: [
           BoxShadow(
@@ -259,22 +260,42 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
   Widget _buildTitleBar(bool isTablet, bool isLargeTablet) {
     return Container(
       width: double.infinity,
-      height: isTablet ? 60.h : 50.h,
-      padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.w : 20.w),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 24.w : 20.w,
+        vertical: isTablet ? 18.h : 14.h,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1e40af), Color(0xFF1e3a8a)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20.r),
+          bottomRight: Radius.circular(20.r),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1e3a8a).withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Title
           Row(
             children: [
-              Icon(FontAwesomeIcons.house, color: deepNavy, size: isTablet ? 20.sp : 18.sp),
+              Icon(FontAwesomeIcons.house, color: Colors.white, size: isTablet ? 20.sp : 18.sp),
               SizedBox(width: isTablet ? 12.w : 8.w),
               Text(
                 'รายการสินเชื่อ',
                 style: GoogleFonts.inter(
                   fontSize: isTablet ? 18.sp : 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: deepNavy,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -309,23 +330,31 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
               ),
               SizedBox(width: isTablet ? 12.w : 8.w),
               // Add Button
-              Container(
-                height: isTablet ? 36.h : 32.h,
-                padding: EdgeInsets.symmetric(horizontal: isTablet ? 16.w : 12.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [success, Color(0xFF047857)]),
-                  borderRadius: BorderRadius.circular(20.r),
-                  boxShadow: [
-                    BoxShadow(color: success.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FontAwesomeIcons.plus, color: Colors.white, size: isTablet ? 14.sp : 12.sp),
-                    SizedBox(width: isTablet ? 8.w : 6.w),
-                    Text('เพิ่ม', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 12.sp, fontWeight: FontWeight.w500, color: Colors.white)),
-                  ],
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoanApplicationScreen()),
+                  );
+                },
+                child: Container(
+                  height: isTablet ? 36.h : 32.h,
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 16.w : 12.w),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [success, Color(0xFF047857)]),
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [
+                      BoxShadow(color: success.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FontAwesomeIcons.plus, color: Colors.white, size: isTablet ? 14.sp : 12.sp),
+                      SizedBox(width: isTablet ? 8.w : 6.w),
+                      Text('เพิ่ม', style: GoogleFonts.inter(fontSize: isTablet ? 14.sp : 12.sp, fontWeight: FontWeight.w500, color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -682,21 +711,31 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
                 children: [
                   // Edit
                   Expanded(
-                    child: Container(
-                      height: isTablet ? 36.h : 32.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFf97316),
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [BoxShadow(color: const Color(0xFFf97316).withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: isTablet ? 12.sp : 10.sp),
-                            SizedBox(width: isTablet ? 6.w : 4.w),
-                            Text('แก้ไข', style: GoogleFonts.inter(fontSize: isTablet ? 12.sp : 10.sp, fontWeight: FontWeight.w500, color: Colors.white)),
-                          ],
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LoanApplicationScreen(loanId: app.refCode),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: isTablet ? 36.h : 32.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFf97316),
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: [BoxShadow(color: const Color(0xFFf97316).withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: isTablet ? 12.sp : 10.sp),
+                              SizedBox(width: isTablet ? 6.w : 4.w),
+                              Text('แก้ไข', style: GoogleFonts.inter(fontSize: isTablet ? 12.sp : 10.sp, fontWeight: FontWeight.w500, color: Colors.white)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -704,21 +743,33 @@ class _LuxuryDashboardScreenState extends State<LuxuryDashboardScreen>
                   SizedBox(width: isTablet ? 8.w : 6.w),
                   // Submit
                   Expanded(
-                    child: Container(
-                      height: isTablet ? 36.h : 32.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF007bff),
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [BoxShadow(color: const Color(0xFF007bff).withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: isTablet ? 12.sp : 10.sp),
-                            SizedBox(width: isTablet ? 6.w : 4.w),
-                            Text('ส่งงาน', style: GoogleFonts.inter(fontSize: isTablet ? 12.sp : 10.sp, fontWeight: FontWeight.w500, color: Colors.white)),
-                          ],
+                    child: GestureDetector(
+                      onTap: () {
+                        // TODO: Implement submit API
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('ส่งงาน ${app.refCode}'),
+                            backgroundColor: const Color(0xFF007bff),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: isTablet ? 36.h : 32.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF007bff),
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: [BoxShadow(color: const Color(0xFF007bff).withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: isTablet ? 12.sp : 10.sp),
+                              SizedBox(width: isTablet ? 6.w : 4.w),
+                              Text('ส่งงาน', style: GoogleFonts.inter(fontSize: isTablet ? 12.sp : 10.sp, fontWeight: FontWeight.w500, color: Colors.white)),
+                            ],
+                          ),
                         ),
                       ),
                     ),

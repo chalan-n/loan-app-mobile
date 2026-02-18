@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/glass_card.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// 📝 Step 1 Screen - ข้อมูลผู้เช่าซื้อ/ผู้กู้
-/// จัดการข้อมูลส่วนตัวของผู้กู้ตามระบบเดิม
+/// 👤 Step 1 - ข้อมูลผู้เช่าซื้อ
 class Step1Screen extends StatefulWidget {
   final Map<String, dynamic> formData;
   final VoidCallback onNext;
@@ -19,25 +19,30 @@ class Step1Screen extends StatefulWidget {
 }
 
 class _Step1ScreenState extends State<Step1Screen> {
-  final _formKey = GlobalKey<FormState>();
-  
+  static const Color navy = Color(0xFF1e3a8a);
+  static const Color light = Color(0xFFf8fafc);
+  static const Color borderColor = Color(0xFFe2e8f0);
+
   // Controllers
-  final _titleController = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _idCardController = TextEditingController();
-  final _mobilePhoneController = TextEditingController();
-  final _companyNameController = TextEditingController();
-  final _occupationController = TextEditingController();
-  final _positionController = TextEditingController();
-  final _salaryController = TextEditingController();
-  final _otherIncomeController = TextEditingController();
-  final _taxIdController = TextEditingController();
-  final _tradeRegistrationController = TextEditingController();
-  
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _idCardCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
+  final _occupationCtrl = TextEditingController();
+  final _positionCtrl = TextEditingController();
+  final _salaryCtrl = TextEditingController();
+  final _otherIncomeCtrl = TextEditingController();
+  final _taxIdCtrl = TextEditingController();
+  final _tradeRegCtrl = TextEditingController();
+  final _idCardIssueDateCtrl = TextEditingController();
+  final _idCardExpiryDateCtrl = TextEditingController();
+  final _dateOfBirthCtrl = TextEditingController();
+  final _registrationDateCtrl = TextEditingController();
+
   // Dropdown values
   String _borrowerType = 'individual';
-  String _title = 'นาย';
+  String _prefix = 'นาย';
   String _gender = 'ชาย';
   String _maritalStatus = 'โสด';
   String _ethnicity = 'ไทย';
@@ -45,636 +50,307 @@ class _Step1ScreenState extends State<Step1Screen> {
   String _religion = 'พุทธ';
   String _creditBureauStatus = 'ปกติ';
   String _incomeSource = 'เงินเดือน';
-  
-  // Date controllers
-  final _idCardIssueDateController = TextEditingController();
-  final _idCardExpiryDateController = TextEditingController();
-  final _dateOfBirthController = TextEditingController();
-  final _registrationDateController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadFormData();
+    _loadFromFormData();
   }
 
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
+  void _loadFromFormData() {
+    final d = widget.formData;
+    _firstNameCtrl.text = d['first_name'] ?? '';
+    _lastNameCtrl.text = d['last_name'] ?? '';
+    _idCardCtrl.text = d['id_card'] ?? '';
+    _phoneCtrl.text = d['mobile_phone'] ?? '';
+    _companyCtrl.text = d['company_name'] ?? '';
+    _occupationCtrl.text = d['occupation'] ?? '';
+    _positionCtrl.text = d['position'] ?? '';
+    _salaryCtrl.text = d['salary']?.toString() ?? '';
+    _otherIncomeCtrl.text = d['other_income']?.toString() ?? '';
+    _taxIdCtrl.text = d['tax_id'] ?? '';
+    _tradeRegCtrl.text = d['trade_registration_id'] ?? '';
+    _idCardIssueDateCtrl.text = d['id_card_issue_date'] ?? '';
+    _idCardExpiryDateCtrl.text = d['id_card_expiry_date'] ?? '';
+    _dateOfBirthCtrl.text = d['date_of_birth'] ?? '';
+    _registrationDateCtrl.text = d['registration_date'] ?? '';
+    _borrowerType = d['borrower_type'] ?? 'individual';
+    _prefix = d['prefix'] ?? 'นาย';
+    _gender = d['gender'] ?? 'ชาย';
+    _maritalStatus = d['marital_status'] ?? 'โสด';
+    _ethnicity = d['ethnicity'] ?? 'ไทย';
+    _nationality = d['nationality'] ?? 'ไทย';
+    _religion = d['religion'] ?? 'พุทธ';
+    _creditBureauStatus = d['credit_bureau_status'] ?? 'ปกติ';
+    _incomeSource = d['income_source'] ?? 'เงินเดือน';
   }
 
-  void _disposeControllers() {
-    _titleController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _idCardController.dispose();
-    _mobilePhoneController.dispose();
-    _companyNameController.dispose();
-    _occupationController.dispose();
-    _positionController.dispose();
-    _salaryController.dispose();
-    _otherIncomeController.dispose();
-    _taxIdController.dispose();
-    _tradeRegistrationController.dispose();
-    _idCardIssueDateController.dispose();
-    _idCardExpiryDateController.dispose();
-    _dateOfBirthController.dispose();
-    _registrationDateController.dispose();
-  }
-
-  void _loadFormData() {
-    // Load existing data if available
-    if (widget.formData.isNotEmpty) {
-      _titleController.text = widget.formData['title'] ?? '';
-      _firstNameController.text = widget.formData['first_name'] ?? '';
-      _lastNameController.text = widget.formData['last_name'] ?? '';
-      _idCardController.text = widget.formData['id_card'] ?? '';
-      _mobilePhoneController.text = widget.formData['mobile_phone'] ?? '';
-      _companyNameController.text = widget.formData['company_name'] ?? '';
-      _occupationController.text = widget.formData['occupation'] ?? '';
-      _positionController.text = widget.formData['position'] ?? '';
-      _salaryController.text = widget.formData['salary']?.toString() ?? '';
-      _otherIncomeController.text = widget.formData['other_income']?.toString() ?? '';
-      _taxIdController.text = widget.formData['tax_id'] ?? '';
-      _tradeRegistrationController.text = widget.formData['trade_registration_id'] ?? '';
-      
-      _borrowerType = widget.formData['borrower_type'] ?? 'individual';
-      _title = widget.formData['title'] ?? 'นาย';
-      _gender = widget.formData['gender'] ?? 'ชาย';
-      _maritalStatus = widget.formData['marital_status'] ?? 'โสด';
-      _ethnicity = widget.formData['ethnicity'] ?? 'ไทย';
-      _nationality = widget.formData['nationality'] ?? 'ไทย';
-      _religion = widget.formData['religion'] ?? 'พุทธ';
-      _creditBureauStatus = widget.formData['credit_bureau_status'] ?? 'ปกติ';
-      _incomeSource = widget.formData['income_source'] ?? 'เงินเดือน';
-    }
-  }
-
-  void _saveFormData() {
-    widget.formData.clear();
-    widget.formData.addAll({
-      'borrower_type': _borrowerType,
-      'title': _title,
-      'first_name': _firstNameController.text,
-      'last_name': _lastNameController.text,
-      'gender': _gender,
-      'id_card': _idCardController.text,
-      'id_card_issue_date': _idCardIssueDateController.text,
-      'id_card_expiry_date': _idCardExpiryDateController.text,
-      'date_of_birth': _dateOfBirthController.text,
-      'ethnicity': _ethnicity,
-      'nationality': _nationality,
-      'religion': _religion,
-      'marital_status': _maritalStatus,
-      'mobile_phone': _mobilePhoneController.text,
-      'company_name': _companyNameController.text,
-      'occupation': _occupationController.text,
-      'position': _positionController.text,
-      'salary': double.tryParse(_salaryController.text.replaceAll(',', '')) ?? 0.0,
-      'other_income': double.tryParse(_otherIncomeController.text.replaceAll(',', '')) ?? 0.0,
-      'income_source': _incomeSource,
-      'credit_bureau_status': _creditBureauStatus,
-      
-      // Juristic fields
-      'trade_registration_id': _tradeRegistrationController.text,
-      'registration_date': _registrationDateController.text,
-      'tax_id': _taxIdController.text,
-    });
+  void _saveToFormData() {
+    widget.formData['borrower_type'] = _borrowerType;
+    widget.formData['prefix'] = _prefix;
+    widget.formData['first_name'] = _firstNameCtrl.text;
+    widget.formData['last_name'] = _lastNameCtrl.text;
+    widget.formData['gender'] = _gender;
+    widget.formData['id_card'] = _idCardCtrl.text;
+    widget.formData['id_card_issue_date'] = _idCardIssueDateCtrl.text;
+    widget.formData['id_card_expiry_date'] = _idCardExpiryDateCtrl.text;
+    widget.formData['date_of_birth'] = _dateOfBirthCtrl.text;
+    widget.formData['ethnicity'] = _ethnicity;
+    widget.formData['nationality'] = _nationality;
+    widget.formData['religion'] = _religion;
+    widget.formData['marital_status'] = _maritalStatus;
+    widget.formData['mobile_phone'] = _phoneCtrl.text;
+    widget.formData['company_name'] = _companyCtrl.text;
+    widget.formData['occupation'] = _occupationCtrl.text;
+    widget.formData['position'] = _positionCtrl.text;
+    widget.formData['salary'] = _salaryCtrl.text;
+    widget.formData['other_income'] = _otherIncomeCtrl.text;
+    widget.formData['income_source'] = _incomeSource;
+    widget.formData['credit_bureau_status'] = _creditBureauStatus;
+    widget.formData['trade_registration_id'] = _tradeRegCtrl.text;
+    widget.formData['registration_date'] = _registrationDateCtrl.text;
+    widget.formData['tax_id'] = _taxIdCtrl.text;
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 📋 Borrower Type Selection
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ประเภทผู้กู้',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('บุคคลธรรมดา'),
-                          value: 'individual',
-                          groupValue: _borrowerType,
-                          onChanged: (value) {
-                            setState(() {
-                              _borrowerType = value!;
-                            });
-                          },
-                          activeColor: AppTheme.sapphireBlue,
-                        ),
-                      ),
-                      Expanded(
-                        child: RadioListTile<String>(
-                          title: const Text('นิติบุคคล'),
-                          value: 'juristic',
-                          groupValue: _borrowerType,
-                          onChanged: (value) {
-                            setState(() {
-                              _borrowerType = value!;
-                            });
-                          },
-                          activeColor: AppTheme.sapphireBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 👤 Personal Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ข้อมูลส่วนตัว',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Title and Name Row
-                  Row(
-                    children: [
-                      // Title
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'คำนำหน้า',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _title,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'นาย', child: Text('นาย')),
-                                    DropdownMenuItem(value: 'นาง', child: Text('นาง')),
-                                    DropdownMenuItem(value: 'นางสาว', child: Text('นางสาว')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _title = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // First Name
-                      Expanded(
-                        flex: 4,
-                        child: GlassInputField(
-                          label: 'ชื่อ',
-                          hint: 'กรอกชื่อจริง',
-                          controller: _firstNameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกชื่อ';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Last Name
-                  GlassInputField(
-                    label: 'นามสกุล',
-                    hint: 'กรอกนามสกุลจริง',
-                    controller: _lastNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกนามสกุล';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Gender and Marital Status Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'เพศ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _gender,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'ชาย', child: Text('ชาย')),
-                                    DropdownMenuItem(value: 'หญิง', child: Text('หญิง')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _gender = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'สถานะภาพ',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.deepNavy,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppTheme.mediumBlue.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppTheme.pureWhite,
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _maritalStatus,
-                                  isExpanded: true,
-                                  items: const [
-                                    DropdownMenuItem(value: 'โสด', child: Text('โสด')),
-                                    DropdownMenuItem(value: 'สมรส', child: Text('สมรส')),
-                                    DropdownMenuItem(value: 'หย่า', child: Text('หย่า')),
-                                    DropdownMenuItem(value: 'ม่าย', child: Text('ม่าย')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _maritalStatus = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 🆔 Identification Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ข้อมูลบัตรประชาชน',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  GlassInputField(
-                    label: 'เลขบัตรประชาชน',
-                    hint: 'กรอกเลขบัตรประชาชน 13 หลัก',
-                    controller: _idCardController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 13,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกเลขบัตรประชาชน';
-                      }
-                      if (value.length != 13) {
-                        return 'เลขบัตรประชาชนต้องมี 13 หลัก';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'วันออกบัตร',
-                          hint: 'DD/MM/YYYY',
-                          controller: _idCardIssueDateController,
-                          onTap: () => _selectDate(context, _idCardIssueDateController),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'วันหมดอายุ',
-                          hint: 'DD/MM/YYYY',
-                          controller: _idCardExpiryDateController,
-                          onTap: () => _selectDate(context, _idCardExpiryDateController),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  GlassInputField(
-                    label: 'วันเกิด',
-                    hint: 'DD/MM/YYYY',
-                    controller: _dateOfBirthController,
-                    onTap: () => _selectDate(context, _dateOfBirthController),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 📱 Contact Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ข้อมูลติดต่อ',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  GlassInputField(
-                    label: 'เบอร์โทรศัพท์มือถือ',
-                    hint: 'กรอกเบอร์โทรศัพท์ 10 หลัก',
-                    controller: _mobilePhoneController,
-                    keyboardType: TextInputType.phone,
-                    prefixIcon: Icons.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกเบอร์โทรศัพท์';
-                      }
-                      if (value.length != 10) {
-                        return 'เบอร์โทรศัพท์ต้องมี 10 หลัก';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 🏢 Work Information
-            GlassCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ข้อมูลการทำงาน',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  GlassInputField(
-                    label: 'ชื่อบริษัท/หน่วยงาน',
-                    hint: 'กรอกชื่อบริษัทหรือหน่วยงาน',
-                    controller: _companyNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'กรุณากรอกชื่อบริษัท';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'อาชีพ',
-                          hint: 'กรอกอาชีพ',
-                          controller: _occupationController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกอาชีพ';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'ตำแหน่ง',
-                          hint: 'กรอกตำแหน่ง',
-                          controller: _positionController,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'เงินเดือน (บาท)',
-                          hint: '0.00',
-                          controller: _salaryController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.attach_money,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'กรุณากรอกเงินเดือน';
-                            }
-                            final amount = double.tryParse(value.replaceAll(',', ''));
-                            if (amount == null || amount <= 0) {
-                              return 'กรุณากรอกจำนวนเงินที่ถูกต้อง';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            // Format currency
-                            final cleanValue = value.replaceAll(',', '');
-                            if (cleanValue.isNotEmpty) {
-                              final number = double.tryParse(cleanValue);
-                              if (number != null) {
-                                // Don't update here to avoid cursor issues
-                                // Format will be applied on focus change
-                              }
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassInputField(
-                          label: 'รายได้อื่น (บาท)',
-                          hint: '0.00',
-                          controller: _otherIncomeController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.add_circle_outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // 🏢 Juristic Information (แสดงเฉพาะเมื่อเลือกนิติบุคคล)
-            if (_borrowerType == 'juristic')
-              GlassCard(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ข้อมูลนิติบุคคล',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    GlassInputField(
-                      label: 'เลขทะเบียนพาณิชย์',
-                      hint: 'กรอกเลขทะเบียนพาณิชย์',
-                      controller: _tradeRegistrationController,
-                      validator: (value) {
-                        if (_borrowerType == 'juristic' && (value == null || value.isEmpty)) {
-                          return 'กรุณากรอกเลขทะเบียนพาณิชย์';
-                        }
-                        return null;
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    GlassInputField(
-                      label: 'วันที่จดทะเบียน',
-                      hint: 'DD/MM/YYYY',
-                      controller: _registrationDateController,
-                      onTap: () => _selectDate(context, _registrationDateController),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    GlassInputField(
-                      label: 'เลขประจำตัวผู้เสียภาษี',
-                      hint: 'กรอกเลขประจำตัวผู้เสียภาษี',
-                      controller: _taxIdController,
-                      validator: (value) {
-                        if (_borrowerType == 'juristic' && (value == null || value.isEmpty)) {
-                          return 'กรุณากรอกเลขประจำตัวผู้เสียภาษี';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            
-            const SizedBox(height: 40),
-            
-            // ✅ Validation Summary
-            GlassCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppTheme.sapphireBlue,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.mediumGray,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // === Section: ประเภทผู้เช่าซื้อ ===
+          _buildSection(
+            icon: FontAwesomeIcons.users,
+            title: 'ประเภทผู้เช่าซื้อ',
+            children: [
+              _buildRadioGroup('ประเภทผู้กู้', _borrowerType, {
+                'individual': 'บุคคลธรรมดา',
+                'juristic': 'นิติบุคคล',
+              }, (v) => setState(() => _borrowerType = v ?? 'individual')),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ข้อมูลส่วนตัว ===
+          _buildSection(
+            icon: FontAwesomeIcons.idCard,
+            title: 'ข้อมูลส่วนตัว',
+            children: [
+              _buildDropdown('คำนำหน้า', _prefix, ['นาย', 'นาง', 'นางสาว'], (v) => setState(() => _prefix = v ?? 'นาย')),
+              _buildTextField('ชื่อ', _firstNameCtrl),
+              _buildTextField('นามสกุล', _lastNameCtrl),
+              _buildDropdown('เพศ', _gender, ['ชาย', 'หญิง'], (v) => setState(() => _gender = v ?? 'ชาย')),
+              _buildDropdown('สถานะภาพ', _maritalStatus, ['โสด', 'สมรส', 'หย่า', 'ม่าย'], (v) => setState(() => _maritalStatus = v ?? 'โสด')),
+              _buildTextField('เลขบัตรประชาชน', _idCardCtrl, keyboardType: TextInputType.number),
+              _buildTextField('วันออกบัตร', _idCardIssueDateCtrl, onTap: () => _selectDate(context, _idCardIssueDateCtrl)),
+              _buildTextField('วันหมดอายุ', _idCardExpiryDateCtrl, onTap: () => _selectDate(context, _idCardExpiryDateCtrl)),
+              _buildTextField('วันเกิด', _dateOfBirthCtrl, onTap: () => _selectDate(context, _dateOfBirthCtrl)),
+              _buildDropdown('เชื้อชาติ', _ethnicity, ['ไทย', 'อื่นๆ'], (v) => setState(() => _ethnicity = v ?? 'ไทย')),
+              _buildDropdown('สัญชาติ', _nationality, ['ไทย', 'อื่นๆ'], (v) => setState(() => _nationality = v ?? 'ไทย')),
+              _buildDropdown('ศาสนา', _religion, ['พุทธ', 'อิสลาม', 'คริสต์', 'อื่นๆ'], (v) => setState(() => _religion = v ?? 'พุทธ')),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ข้อมูลติดต่อ ===
+          _buildSection(
+            icon: FontAwesomeIcons.phone,
+            title: 'ข้อมูลติดต่อ',
+            children: [
+              _buildTextField('เบอร์โทรศัพท์มือถือ', _phoneCtrl, keyboardType: TextInputType.phone),
+            ],
+          ),
+
+          SizedBox(height: 20.h),
+
+          // === Section: ข้อมูลการทำงาน ===
+          _buildSection(
+            icon: FontAwesomeIcons.briefcase,
+            title: 'ข้อมูลการทำงาน',
+            children: [
+              _buildTextField('ชื่อบริษัท/หน่วยงาน', _companyCtrl),
+              _buildTextField('อาชีพ', _occupationCtrl),
+              _buildTextField('ตำแหน่ง', _positionCtrl),
+              _buildTextField('เงินเดือน (บาท)', _salaryCtrl, keyboardType: TextInputType.number),
+              _buildTextField('รายได้อื่น (บาท)', _otherIncomeCtrl, keyboardType: TextInputType.number),
+              _buildDropdown('แหล่งรายได้', _incomeSource, ['เงินเดือน', 'ธุรกิจส่วนตัว', 'อื่นๆ'], (v) => setState(() => _incomeSource = v ?? 'เงินเดือน')),
+              _buildDropdown('สถานะเครดิตบูโร', _creditBureauStatus, ['ปกติ', 'ค้างชำระ', 'อื่นๆ'], (v) => setState(() => _creditBureauStatus = v ?? 'ปกติ')),
+            ],
+          ),
+
+          // === Section: ข้อมูลนิติบุคคล (แสดงเฉพาะเมื่อเลือกนิติบุคคล) ===
+          if (_borrowerType == 'juristic') ...[
+            SizedBox(height: 20.h),
+            _buildSection(
+              icon: FontAwesomeIcons.building,
+              title: 'ข้อมูลนิติบุคคล',
+              children: [
+                _buildTextField('เลขทะเบียนพาณิชย์', _tradeRegCtrl),
+                _buildTextField('วันที่จดทะเบียน', _registrationDateCtrl, onTap: () => _selectDate(context, _registrationDateCtrl)),
+                _buildTextField('เลขประจำตัวผู้เสียภาษี', _taxIdCtrl),
+              ],
             ),
           ],
-        ),
+
+          SizedBox(height: 20.h),
+
+          // === Info Box ===
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFeff6ff),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFbfdbfe)),
+            ),
+            child: Row(
+              children: [
+                Icon(FontAwesomeIcons.circleInfo, color: navy, size: 16.sp),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ',
+                    style: GoogleFonts.kanit(fontSize: 12.sp, color: const Color(0xFF6b7280)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // === Reusable Widgets (เหมือน Step2) ===
+
+  Widget _buildSection({required IconData icon, required String title, required List<Widget> children}) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: light,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.only(bottom: 8.h),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: navy, width: 3)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36.w, height: 36.w,
+                  decoration: BoxDecoration(
+                    color: navy.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(child: Icon(icon, color: navy, size: 16.sp)),
+                ),
+                SizedBox(width: 10.w),
+                Text(title, style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: navy)),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController ctrl, {TextInputType? keyboardType, bool readOnly = false, VoidCallback? onTap}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
+          SizedBox(height: 6.h),
+          TextField(
+            controller: ctrl,
+            keyboardType: keyboardType,
+            readOnly: onTap != null || readOnly,
+            onTap: onTap,
+            style: GoogleFonts.kanit(fontSize: 14.sp),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: readOnly ? const Color(0xFFf3f4f6) : Colors.white,
+              contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              suffixIcon: onTap != null ? Icon(FontAwesomeIcons.calendar, size: 14.sp, color: navy) : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: borderColor, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: borderColor, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: const BorderSide(color: navy, width: 2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
+          SizedBox(height: 6.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: borderColor, width: 2),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: items.contains(value) ? value : null,
+                isExpanded: true,
+                style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF1e293b)),
+                hint: Text('— เลือก —', style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF9ca3af))),
+                items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(String label, String value, Map<String, String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
+          SizedBox(height: 8.h),
+          Wrap(
+            spacing: 20.w,
+            children: options.entries.map((e) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Radio<String>(value: e.key, groupValue: value, onChanged: onChanged, activeColor: navy),
+                Text(e.value, style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF4b5563))),
+              ],
+            )).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -689,10 +365,10 @@ class _Step1ScreenState extends State<Step1Screen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppTheme.sapphireBlue,
-              onPrimary: AppTheme.pureWhite,
-              surface: AppTheme.snowWhite,
-              onSurface: AppTheme.deepNavy,
+              primary: navy,
+              onPrimary: Colors.white,
+              surface: Color(0xFFf8fafc),
+              onSurface: Color(0xFF1e293b),
             ),
           ),
           child: child!,
@@ -701,11 +377,30 @@ class _Step1ScreenState extends State<Step1Screen> {
     );
 
     if (picked != null) {
-      // Format as DD/MM/YYYY
-      final formattedDate = '${picked.day.toString().padLeft(2, '0')}/'
-                           '${picked.month.toString().padLeft(2, '0')}/'
-                           '${picked.year}';
-      controller.text = formattedDate;
+      controller.text = '${picked.day.toString().padLeft(2, '0')}/'
+          '${picked.month.toString().padLeft(2, '0')}/'
+          '${picked.year}';
     }
+  }
+
+  @override
+  void dispose() {
+    _saveToFormData();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
+    _idCardCtrl.dispose();
+    _phoneCtrl.dispose();
+    _companyCtrl.dispose();
+    _occupationCtrl.dispose();
+    _positionCtrl.dispose();
+    _salaryCtrl.dispose();
+    _otherIncomeCtrl.dispose();
+    _taxIdCtrl.dispose();
+    _tradeRegCtrl.dispose();
+    _idCardIssueDateCtrl.dispose();
+    _idCardExpiryDateCtrl.dispose();
+    _dateOfBirthCtrl.dispose();
+    _registrationDateCtrl.dispose();
+    super.dispose();
   }
 }

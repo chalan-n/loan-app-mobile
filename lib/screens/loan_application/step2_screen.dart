@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/api_service.dart';
 
 /// 🚗 Step 2 - ข้อมูลรถยนต์
 class Step2Screen extends StatefulWidget {
@@ -122,6 +123,7 @@ class _Step2ScreenState extends State<Step2Screen> {
   final _carChassisCtrl = TextEditingController();
   final _carEngineCtrl = TextEditingController();
   final _licensePlateCtrl = TextEditingController();
+  final _carRegDateCtrl = TextEditingController();
   final _carPriceCtrl = TextEditingController();
   final _vatRateCtrl = TextEditingController();
 
@@ -129,24 +131,26 @@ class _Step2ScreenState extends State<Step2Screen> {
   String _carBrand = '';
   String _carColor = '';
   String _carGear = 'Manual';
-  String _carCondition = 'OLD';
+  String _carCondition = 'เก่า';
   String _licenseProvince = '';
   bool _isRefinance = false;
   
   // Animation controllers
   bool _showCarInfoSection = false;
   bool _showVatSection = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _carCodeCtrl.addListener(() => setState(() {}));
     _loadFromFormData();
     _startAnimations();
   }
 
   void _startAnimations() {
     // เริ่มแสดง Card แรกทันที
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {
           _showCarInfoSection = true;
@@ -155,7 +159,7 @@ class _Step2ScreenState extends State<Step2Screen> {
     });
     
     // เริ่มแสดง Card ที่สองหลังจาก Card แรก 300ms
-    Future.delayed(Duration(milliseconds: 400), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
         setState(() {
           _showVatSection = true;
@@ -175,13 +179,14 @@ class _Step2ScreenState extends State<Step2Screen> {
     _carChassisCtrl.text = d['car_chassis_no'] ?? '';
     _carEngineCtrl.text = d['car_engine_no'] ?? '';
     _licensePlateCtrl.text = d['license_plate'] ?? '';
+    _carRegDateCtrl.text = d['car_reg_date'] ?? '';
     _carPriceCtrl.text = d['car_price'] ?? '';
     _vatRateCtrl.text = d['vat_rate'] ?? '';
     _carType = d['car_type'] ?? '';
     _carBrand = d['car_brand'] ?? '';
     _carColor = d['car_color'] ?? '';
     _carGear = d['car_gear'] ?? 'Manual';
-    _carCondition = d['car_condition'] ?? 'OLD';
+    _carCondition = d['car_condition'] ?? 'เก่า';
     _licenseProvince = d['license_province'] ?? '';
     _isRefinance = d['is_refinance'] ?? false;
   }
@@ -190,6 +195,7 @@ class _Step2ScreenState extends State<Step2Screen> {
     widget.formData['car_code'] = _carCodeCtrl.text;
     widget.formData['car_type'] = _carType;
     widget.formData['car_brand'] = _carBrand;
+    widget.formData['car_reg_date'] = _carRegDateCtrl.text;
     widget.formData['car_model'] = _carModelCtrl.text;
     widget.formData['car_year'] = _carYearCtrl.text;
     widget.formData['car_color'] = _carColor;
@@ -207,10 +213,66 @@ class _Step2ScreenState extends State<Step2Screen> {
     widget.formData['is_refinance'] = _isRefinance;
   }
 
+  void _searchCar() async {
+    final code = _carCodeCtrl.text.trim();
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณากรอกรหัสรถเพื่อค้นหา'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final res = await ApiService.searchCarData(code);
+      if (res['success'] == true && res['car'] != null) {
+        final car = res['car'];
+        setState(() {
+          _carModelCtrl.text = car['car_model']?.toString() ?? '';
+          _carYearCtrl.text = car['car_year']?.toString() ?? '';
+          _carWeightCtrl.text = car['car_weight']?.toString() ?? '';
+          _carCCCtrl.text = car['car_cc']?.toString() ?? '';
+          _carMileageCtrl.text = car['car_mileage']?.toString() ?? '';
+          _carChassisCtrl.text = car['car_chassis_no']?.toString() ?? '';
+          _carEngineCtrl.text = car['car_engine_no']?.toString() ?? '';
+          _licensePlateCtrl.text = car['license_plate']?.toString() ?? '';
+          _carRegDateCtrl.text = car['car_reg_date']?.toString() ?? '';
+          _carPriceCtrl.text = car['car_price']?.toString() ?? '';
+          
+          if (car['car_type'] != null) _carType = car['car_type'];
+          if (car['car_brand'] != null) _carBrand = car['car_brand'];
+          if (car['car_color'] != null) _carColor = car['car_color'];
+          if (car['car_gear'] != null) _carGear = car['car_gear'];
+          if (car['car_condition'] != null) _carCondition = car['car_condition'];
+          if (car['license_province'] != null) _licenseProvince = car['license_province'];
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('พบข้อมูลรถยนต์'), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        throw Exception('ไม่พบข้อมูลรถยนต์รหัส: $code');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -221,20 +283,69 @@ class _Step2ScreenState extends State<Step2Screen> {
               icon: FontAwesomeIcons.car,
               title: 'ข้อมูลรถ',
               children: [
-                _buildTextField('รหัสรถ', _carCodeCtrl, readOnly: true),
-                _buildDropdown('ประเภทรถยนต์', _carType, [''], (v) => setState(() => _carType = v ?? '')),
-                _buildDropdown('ยี่ห้อ', _carBrand, [''], (v) => setState(() => _carBrand = v ?? '')),
+                _buildTextField('รหัสรถ', _carCodeCtrl),
+                // ปุ่มค้นหลัก
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: (_isLoading || _carCodeCtrl.text.trim().length < 7) 
+                          ? null 
+                          : _searchCar,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _carCodeCtrl.text.trim().length >= 7 ? navy : const Color(0xFFe2e8f0),
+                        foregroundColor: _carCodeCtrl.text.trim().length >= 7 ? Colors.white : const Color(0xFF6b7280),
+                        disabledBackgroundColor: const Color(0xFFe2e8f0),
+                        disabledForegroundColor: const Color(0xFF6b7280),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: _isLoading 
+                        ? SizedBox(
+                            width: 20.w, 
+                            height: 20.w, 
+                            child: const CircularProgressIndicator(color: navy, strokeWidth: 2)
+                          )
+                        : Text('ค้นหา',
+                            style: GoogleFonts.kanit(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
+                _buildDropdown('ประเภทรถยนต์', _carType,
+                    ['', 'รถเก๋ง', 'รถกระบะ', 'รถตู้', 'รถจักรยานยนต์', 'อื่นๆ'],
+                    (v) => setState(() => _carType = v ?? '')),
+                _buildDropdown('ยี่ห้อ', _carBrand,
+                    ['', 'Toyota', 'Honda', 'Isuzu', 'Mitsubishi',
+                     'Nissan', 'Mazda', 'Ford', 'Suzuki', 'อื่นๆ'],
+                    (v) => setState(() => _carBrand = v ?? '')),
+                _buildTextField('วันจดทะเบียน', _carRegDateCtrl, isDate: true),
                 _buildTextField('รุ่น', _carModelCtrl),
                 _buildTextField('ปีรถ', _carYearCtrl, keyboardType: TextInputType.number),
-                _buildDropdown('สี', _carColor, [''], (v) => setState(() => _carColor = v ?? '')),
+                _buildDropdown('สี', _carColor,
+                    ['', 'ขาว', 'ดำ', 'เทา', 'เงิน', 'แดง', 'น้ำเงิน',
+                     'น้ำตาล', 'ชมพู', 'อื่นๆ'],
+                    (v) => setState(() => _carColor = v ?? '')),
                 _buildTextField('น้ำหนักรถ', _carWeightCtrl, keyboardType: TextInputType.number),
-                _buildTextField('จำนวน CC', _carCCCtrl, keyboardType: TextInputType.number),
+                _buildTextField('จำนวน cc', _carCCCtrl, keyboardType: TextInputType.number),
                 _buildTextField('เลขไมล์', _carMileageCtrl, keyboardType: TextInputType.number),
-                _buildDropdown('ประเภทเกียร์', _carGear, ['Manual', 'Automatic'], (v) => setState(() => _carGear = v ?? 'Manual')),
+                _buildDropdown('ประเภทเกียร์', _carGear,
+                    ['Manual', 'Automatic'],
+                    (v) => setState(() => _carGear = v ?? 'Manual')),
                 _buildTextField('เลขตัวถัง', _carChassisCtrl),
                 _buildTextField('เลขเครื่อง', _carEngineCtrl),
-                _buildDropdown('สภาพรถ', _carCondition, ['OLD', 'NEW'], (v) => setState(() => _carCondition = v ?? 'OLD')),
+                _buildDropdown('สภาพรถ', _carCondition,
+                    ['เก่า', 'ใหม่'],
+                    (v) => setState(() => _carCondition = v ?? 'เก่า')),
                 _buildTextField('เลขทะเบียน', _licensePlateCtrl),
+                _buildDropdown('จังหวัด', _licenseProvince,
+                    ['', 'กรุงเทพมหานคร', 'เชียงใหม่', 'นนทบุรี',
+                     'ชลบุรี', 'ขอนแก่น', 'อื่นๆ'],
+                    (v) => setState(() => _licenseProvince = v ?? '')),
               ],
             ),
           ),
@@ -248,9 +359,9 @@ class _Step2ScreenState extends State<Step2Screen> {
               icon: FontAwesomeIcons.calculator,
               title: 'ภาษีมูลค่าเพิ่ม',
               children: [
-                _buildTextField('อัตรา VAT (%)', _vatRateCtrl, keyboardType: TextInputType.number),
+                _buildTextField('ภาษีมูลค่าเพิ่ม', _vatRateCtrl, keyboardType: TextInputType.number),
                 _buildTextField('ราคารถ', _carPriceCtrl, keyboardType: TextInputType.number),
-                _buildCheckbox('จำนำ / Refinance', _isRefinance, (v) => setState(() => _isRefinance = v ?? false)),
+                _buildCheckbox('จำนำ/ Refinance', _isRefinance, (v) => setState(() => _isRefinance = v ?? false)),
               ],
             ),
           ),
@@ -281,7 +392,7 @@ class _Step2ScreenState extends State<Step2Screen> {
                 Container(
                   width: 36.w, height: 36.w,
                   decoration: BoxDecoration(
-                    color: navy.withOpacity(0.1),
+                    color: navy.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(child: Icon(icon, color: navy, size: 16.sp)),
@@ -298,7 +409,8 @@ class _Step2ScreenState extends State<Step2Screen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController ctrl, {TextInputType? keyboardType, bool readOnly = false}) {
+  Widget _buildTextField(String label, TextEditingController ctrl,
+      {TextInputType? keyboardType, bool readOnly = false, bool isDate = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Column(
@@ -309,19 +421,38 @@ class _Step2ScreenState extends State<Step2Screen> {
           TextField(
             controller: ctrl,
             keyboardType: keyboardType,
-            readOnly: readOnly,
+            readOnly: readOnly || isDate,
+            onTap: isDate
+                ? () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1950),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      ctrl.text =
+                          '${picked.day.toString().padLeft(2, '0')}'
+                          '/${picked.month.toString().padLeft(2, '0')}'
+                          '/${picked.year}';
+                    }
+                  }
+                : null,
             style: GoogleFonts.kanit(fontSize: 14.sp),
             decoration: InputDecoration(
               filled: true,
               fillColor: readOnly ? const Color(0xFFf3f4f6) : Colors.white,
               contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              suffixIcon: isDate
+                  ? const Icon(Icons.calendar_today, size: 18)
+                  : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: borderColor, width: 2),
+                borderSide: const BorderSide(color: borderColor, width: 2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: borderColor, width: 2),
+                borderSide: const BorderSide(color: borderColor, width: 2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -389,6 +520,7 @@ class _Step2ScreenState extends State<Step2Screen> {
     _carChassisCtrl.dispose();
     _carEngineCtrl.dispose();
     _licensePlateCtrl.dispose();
+    _carRegDateCtrl.dispose();
     _carPriceCtrl.dispose();
     _vatRateCtrl.dispose();
     super.dispose();

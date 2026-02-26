@@ -599,6 +599,24 @@ class ApiService {
     }
   }
 
+  /// 🚗 ค้นหาข้อมูลรถจากรหัสรถ (car_code)
+  static Future<Map<String, dynamic>> searchCarData(String carCode) async {
+    try {
+      final response = await _sendRequest(() => http.get(
+        Uri.parse('$_baseUrl/api/cars/$carCode'),
+        headers: _headers,
+      ));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('ไม่พบข้อมูลรถยนต์ ($carCode)');
+      }
+    } catch (e) {
+      throw Exception('ไม่สามารถค้นหาข้อมูลรถยนต์ได้: $e');
+    }
+  }
+
   /// 🔧 Utility Methods
   static Future<bool> checkConnection() async {
     try {

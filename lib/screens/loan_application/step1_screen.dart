@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// 👤 Step 1 - ข้อมูลผู้เช่าซื้อ
+/// 👤 Step 1 — ข้อมูลผู้เช่าซื้อ (ตรงตามภาพ reference)
 class Step1Screen extends StatefulWidget {
   final Map<String, dynamic> formData;
   final VoidCallback onNext;
@@ -23,206 +23,270 @@ class _Step1ScreenState extends State<Step1Screen> {
   static const Color light = Color(0xFFf8fafc);
   static const Color borderColor = Color(0xFFe2e8f0);
 
-  // Controllers
+  // ─── ข้อมูลส่วนตัว ────────────────────────────────────────
+  final _prefixCtrl = TextEditingController();
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
   final _idCardCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _companyCtrl = TextEditingController();
-  final _occupationCtrl = TextEditingController();
-  final _positionCtrl = TextEditingController();
-  final _salaryCtrl = TextEditingController();
-  final _otherIncomeCtrl = TextEditingController();
-  final _taxIdCtrl = TextEditingController();
-  final _tradeRegCtrl = TextEditingController();
   final _idCardIssueDateCtrl = TextEditingController();
   final _idCardExpiryDateCtrl = TextEditingController();
   final _dateOfBirthCtrl = TextEditingController();
-  final _registrationDateCtrl = TextEditingController();
+  final _ageCtrl = TextEditingController(); // read-only
+  final _phoneCtrl = TextEditingController();
+  final _otherCardNoCtrl = TextEditingController();
+  final _otherCardIssueDateCtrl = TextEditingController();
+  final _otherCardExpiryDateCtrl = TextEditingController();
 
-  // Address Controllers - ที่อยู่ตามทะเบียนบ้าน
-  final _houseNumberCtrl = TextEditingController();
-  final _villageCtrl = TextEditingController();
-  final _laneCtrl = TextEditingController();
-  final _roadCtrl = TextEditingController();
-  final _subdistrictCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController();
-  final _provinceCtrl = TextEditingController();
-  final _postalCodeCtrl = TextEditingController();
-
-  // Address Controllers - ที่อยู่ปัจจุบัน
-  final _currentHouseNumberCtrl = TextEditingController();
-  final _currentVillageCtrl = TextEditingController();
-  final _currentLaneCtrl = TextEditingController();
-  final _currentRoadCtrl = TextEditingController();
-  final _currentSubdistrictCtrl = TextEditingController();
-  final _currentDistrictCtrl = TextEditingController();
-  final _currentProvinceCtrl = TextEditingController();
-  final _currentPostalCodeCtrl = TextEditingController();
-
-  // Work Address Controllers
-  final _workAddressCtrl = TextEditingController();
-  final _workSubdistrictCtrl = TextEditingController();
-  final _workDistrictCtrl = TextEditingController();
-  final _workProvinceCtrl = TextEditingController();
-  final _workPostalCodeCtrl = TextEditingController();
+  // ─── ข้อมูลการทำงาน / รายได้ ──────────────────────────────
+  final _companyCtrl = TextEditingController();
+  final _positionCtrl = TextEditingController();
+  final _salaryCtrl = TextEditingController();
+  final _otherIncomeCtrl = TextEditingController();
+  final _incomeSourceCtrl = TextEditingController(); // แหล่งที่มา
   final _workPhoneCtrl = TextEditingController();
 
-  // Document Delivery Address Controllers
-  bool _deliverySameAsRegistered = true;
-  final _deliveryHouseNumberCtrl = TextEditingController();
-  final _deliveryVillageCtrl = TextEditingController();
-  final _deliveryLaneCtrl = TextEditingController();
-  final _deliveryRoadCtrl = TextEditingController();
-  final _deliverySubdistrictCtrl = TextEditingController();
-  final _deliveryDistrictCtrl = TextEditingController();
-  final _deliveryProvinceCtrl = TextEditingController();
-  final _deliveryPostalCodeCtrl = TextEditingController();
+  // ─── ที่อยู่ตามทะเบียนบ้าน ────────────────────────────────
+  final _houseNoCtrl = TextEditingController();
+  final _buildingCtrl = TextEditingController();  // อาคาร/หมู่บ้าน
+  final _floorCtrl = TextEditingController();     // ชั้นที่
+  final _roomCtrl = TextEditingController();      // เลขที่ห้อง
+  final _mooCtrl = TextEditingController();
+  final _alleyCtrl = TextEditingController();     // ซอย
+  final _roadCtrl = TextEditingController();      // ถนน
+  final _tambonCtrl = TextEditingController();    // ตำบล/แขวง
+  final _amphoeCtrl = TextEditingController();    // อำเภอ/เขต
+  final _provinceCtrl = TextEditingController();  // จังหวัด
+  final _zipCtrl = TextEditingController();
 
-  // Dropdown values
+  // ─── ที่อยู่ปัจจุบัน ──────────────────────────────────────
+  final _curCompanyCtrl = TextEditingController();  // บริษัท/ห้างร้าน/นิติบุคคล
+  final _curHouseNoCtrl = TextEditingController();
+  final _curBuildingCtrl = TextEditingController(); // อาคาร/หมู่บ้าน
+  final _curFloorCtrl = TextEditingController();    // ชั้นที่
+  final _curRoomCtrl = TextEditingController();     // เลขที่ห้อง
+  final _curMooCtrl = TextEditingController();
+  final _curAlleyCtrl = TextEditingController();
+  final _curRoadCtrl = TextEditingController();
+  final _curTambonCtrl = TextEditingController();
+  final _curAmphoeCtrl = TextEditingController();
+  final _curProvinceCtrl = TextEditingController();
+  final _curZipCtrl = TextEditingController();
+
+  // ─── ที่อยู่ที่ทำงาน ──────────────────────────────────────
+  final _workHouseNoCtrl = TextEditingController();
+  final _workBuildingCtrl = TextEditingController();
+  final _workFloorCtrl = TextEditingController();
+  final _workRoomCtrl = TextEditingController();
+  final _workMooCtrl = TextEditingController();
+  final _workAlleyCtrl = TextEditingController();
+  final _workRoadCtrl = TextEditingController();
+  final _workTambonCtrl = TextEditingController();
+  final _workAmphoeCtrl = TextEditingController();
+  final _workProvinceCtrl = TextEditingController();
+  final _workZipCtrl = TextEditingController();
+
+  // ─── ที่อยู่จัดส่งเอกสาร ──────────────────────────────────
+  final _delHouseNoCtrl = TextEditingController();
+  final _delMooCtrl = TextEditingController();
+  final _delAlleyCtrl = TextEditingController();
+  final _delRoadCtrl = TextEditingController();
+  final _delTambonCtrl = TextEditingController();
+  final _delAmphoeCtrl = TextEditingController();
+  final _delProvinceCtrl = TextEditingController();
+  final _delZipCtrl = TextEditingController();
+
+  // ─── ข้อมูลนิติบุคคล ──────────────────────────────────────
+  final _tradeRegCtrl = TextEditingController();
+  final _regDateCtrl = TextEditingController();
+  final _taxIdCtrl = TextEditingController();
+
+  // ─── Dropdown / Radio State ────────────────────────────────
   String _borrowerType = 'individual';
   String _prefix = 'นาย';
   String _gender = 'ชาย';
-  String _maritalStatus = 'โสด';
-  String _ethnicity = 'ไทย';
-  String _nationality = 'ไทย';
-  String _religion = 'พุทธ';
-  String _creditBureauStatus = 'ปกติ';
-  String _incomeSource = 'เงินเดือน';
+  String _otherCardType = '';
+  String _occupation = '';
+  bool _sameAsRegistered = false;
+  String _deliveryChoice = 'registered';
+  String _creditBureauResult = 'found';
 
   @override
   void initState() {
     super.initState();
-    _loadFromFormData();
+    _load();
   }
 
-  void _loadFromFormData() {
+  void _load() {
     final d = widget.formData;
+    _borrowerType = d['borrower_type'] ?? 'individual';
+    _prefix = d['prefix'] ?? 'นาย';
     _firstNameCtrl.text = d['first_name'] ?? '';
     _lastNameCtrl.text = d['last_name'] ?? '';
+    _gender = d['gender'] ?? 'ชาย';
     _idCardCtrl.text = d['id_card'] ?? '';
-    _phoneCtrl.text = d['mobile_phone'] ?? '';
-    _companyCtrl.text = d['company_name'] ?? '';
-    _occupationCtrl.text = d['occupation'] ?? '';
-    _positionCtrl.text = d['position'] ?? '';
-    _salaryCtrl.text = d['salary']?.toString() ?? '';
-    _otherIncomeCtrl.text = d['other_income']?.toString() ?? '';
-    _taxIdCtrl.text = d['tax_id'] ?? '';
-    _tradeRegCtrl.text = d['trade_registration_id'] ?? '';
     _idCardIssueDateCtrl.text = d['id_card_issue_date'] ?? '';
     _idCardExpiryDateCtrl.text = d['id_card_expiry_date'] ?? '';
     _dateOfBirthCtrl.text = d['date_of_birth'] ?? '';
-    _registrationDateCtrl.text = d['registration_date'] ?? '';
-    _borrowerType = d['borrower_type'] ?? 'individual';
-    _prefix = d['prefix'] ?? 'นาย';
-    _gender = d['gender'] ?? 'ชาย';
-    _maritalStatus = d['marital_status'] ?? 'โสด';
-    _ethnicity = d['ethnicity'] ?? 'ไทย';
-    _nationality = d['nationality'] ?? 'ไทย';
-    _religion = d['religion'] ?? 'พุทธ';
-    _creditBureauStatus = d['credit_bureau_status'] ?? 'ปกติ';
-    _incomeSource = d['income_source'] ?? 'เงินเดือน';
-    
-    // Load address data
-    _houseNumberCtrl.text = d['house_number'] ?? '';
-    _villageCtrl.text = d['village'] ?? '';
-    _laneCtrl.text = d['lane'] ?? '';
-    _roadCtrl.text = d['road'] ?? '';
-    _subdistrictCtrl.text = d['subdistrict'] ?? '';
-    _districtCtrl.text = d['district'] ?? '';
-    _provinceCtrl.text = d['province'] ?? '';
-    _postalCodeCtrl.text = d['postal_code'] ?? '';
-    
-    _currentHouseNumberCtrl.text = d['current_house_number'] ?? '';
-    _currentVillageCtrl.text = d['current_village'] ?? '';
-    _currentLaneCtrl.text = d['current_lane'] ?? '';
-    _currentRoadCtrl.text = d['current_road'] ?? '';
-    _currentSubdistrictCtrl.text = d['current_subdistrict'] ?? '';
-    _currentDistrictCtrl.text = d['current_district'] ?? '';
-    _currentProvinceCtrl.text = d['current_province'] ?? '';
-    _currentPostalCodeCtrl.text = d['current_postal_code'] ?? '';
-    
-    _workAddressCtrl.text = d['work_address'] ?? '';
-    _workSubdistrictCtrl.text = d['work_subdistrict'] ?? '';
-    _workDistrictCtrl.text = d['work_district'] ?? '';
-    _workProvinceCtrl.text = d['work_province'] ?? '';
-    _workPostalCodeCtrl.text = d['work_postal_code'] ?? '';
+    _ageCtrl.text = d['age']?.toString() ?? '';
+    _phoneCtrl.text = d['mobile_phone'] ?? '';
+    _otherCardType = d['other_card_type'] ?? '';
+    _otherCardNoCtrl.text = d['other_card_no'] ?? '';
+    _otherCardIssueDateCtrl.text = d['other_card_issue_date'] ?? '';
+    _otherCardExpiryDateCtrl.text = d['other_card_expiry_date'] ?? '';
+
+    _companyCtrl.text = d['company_name'] ?? '';
+    _occupation = d['occupation'] ?? '';
+    _positionCtrl.text = d['position'] ?? '';
+    _salaryCtrl.text = d['salary']?.toString() ?? '';
+    _otherIncomeCtrl.text = d['other_income']?.toString() ?? '';
+    _incomeSourceCtrl.text = d['income_source'] ?? '';
     _workPhoneCtrl.text = d['work_phone'] ?? '';
-    
-    _deliverySameAsRegistered = d['delivery_same_as_registered'] ?? true;
-    _deliveryHouseNumberCtrl.text = d['delivery_house_number'] ?? '';
-    _deliveryVillageCtrl.text = d['delivery_village'] ?? '';
-    _deliveryLaneCtrl.text = d['delivery_lane'] ?? '';
-    _deliveryRoadCtrl.text = d['delivery_road'] ?? '';
-    _deliverySubdistrictCtrl.text = d['delivery_subdistrict'] ?? '';
-    _deliveryDistrictCtrl.text = d['delivery_district'] ?? '';
-    _deliveryProvinceCtrl.text = d['delivery_province'] ?? '';
-    _deliveryPostalCodeCtrl.text = d['delivery_postal_code'] ?? '';
+
+    _houseNoCtrl.text = d['house_number'] ?? '';
+    _buildingCtrl.text = d['building'] ?? '';
+    _floorCtrl.text = d['floor'] ?? '';
+    _roomCtrl.text = d['room'] ?? '';
+    _mooCtrl.text = d['village'] ?? '';
+    _alleyCtrl.text = d['alley'] ?? '';
+    _roadCtrl.text = d['road'] ?? '';
+    _provinceCtrl.text = d['province'] ?? '';
+    _amphoeCtrl.text = d['district'] ?? '';
+    _tambonCtrl.text = d['subdistrict'] ?? '';
+    _zipCtrl.text = d['postal_code'] ?? '';
+
+    _sameAsRegistered = d['same_as_registered'] == true;
+    _curCompanyCtrl.text = d['cur_company'] ?? '';
+    _curHouseNoCtrl.text = d['cur_house_number'] ?? '';
+    _curBuildingCtrl.text = d['cur_building'] ?? '';
+    _curFloorCtrl.text = d['cur_floor'] ?? '';
+    _curRoomCtrl.text = d['cur_room'] ?? '';
+    _curMooCtrl.text = d['cur_village'] ?? '';
+    _curAlleyCtrl.text = d['cur_alley'] ?? '';
+    _curRoadCtrl.text = d['cur_road'] ?? '';
+    _curProvinceCtrl.text = d['cur_province'] ?? '';
+    _curAmphoeCtrl.text = d['cur_district'] ?? '';
+    _curTambonCtrl.text = d['cur_subdistrict'] ?? '';
+    _curZipCtrl.text = d['cur_postal_code'] ?? '';
+
+    _workHouseNoCtrl.text = d['work_house_number'] ?? '';
+    _workBuildingCtrl.text = d['work_building'] ?? '';
+    _workFloorCtrl.text = d['work_floor'] ?? '';
+    _workRoomCtrl.text = d['work_room'] ?? '';
+    _workMooCtrl.text = d['work_village'] ?? '';
+    _workAlleyCtrl.text = d['work_alley'] ?? '';
+    _workRoadCtrl.text = d['work_road'] ?? '';
+    _workProvinceCtrl.text = d['work_province'] ?? '';
+    _workAmphoeCtrl.text = d['work_district'] ?? '';
+    _workTambonCtrl.text = d['work_subdistrict'] ?? '';
+    _workZipCtrl.text = d['work_postal_code'] ?? '';
+
+    _deliveryChoice = d['delivery_choice'] ?? 'registered';
+    _delHouseNoCtrl.text = d['del_house_number'] ?? '';
+    _delMooCtrl.text = d['del_village'] ?? '';
+    _delAlleyCtrl.text = d['del_alley'] ?? '';
+    _delRoadCtrl.text = d['del_road'] ?? '';
+    _delTambonCtrl.text = d['del_subdistrict'] ?? '';
+    _delAmphoeCtrl.text = d['del_district'] ?? '';
+    _delProvinceCtrl.text = d['del_province'] ?? '';
+    _delZipCtrl.text = d['del_postal_code'] ?? '';
+
+    _tradeRegCtrl.text = d['trade_registration_id'] ?? '';
+    _regDateCtrl.text = d['registration_date'] ?? '';
+    _taxIdCtrl.text = d['tax_id'] ?? '';
+    _creditBureauResult = d['credit_bureau_result'] ?? 'found';
   }
 
-  void _saveToFormData() {
-    widget.formData['borrower_type'] = _borrowerType;
-    widget.formData['prefix'] = _prefix;
-    widget.formData['first_name'] = _firstNameCtrl.text;
-    widget.formData['last_name'] = _lastNameCtrl.text;
-    widget.formData['gender'] = _gender;
-    widget.formData['id_card'] = _idCardCtrl.text;
-    widget.formData['id_card_issue_date'] = _idCardIssueDateCtrl.text;
-    widget.formData['id_card_expiry_date'] = _idCardExpiryDateCtrl.text;
-    widget.formData['date_of_birth'] = _dateOfBirthCtrl.text;
-    widget.formData['ethnicity'] = _ethnicity;
-    widget.formData['nationality'] = _nationality;
-    widget.formData['religion'] = _religion;
-    widget.formData['marital_status'] = _maritalStatus;
-    widget.formData['mobile_phone'] = _phoneCtrl.text;
-    widget.formData['company_name'] = _companyCtrl.text;
-    widget.formData['occupation'] = _occupationCtrl.text;
-    widget.formData['position'] = _positionCtrl.text;
-    widget.formData['salary'] = _salaryCtrl.text;
-    widget.formData['other_income'] = _otherIncomeCtrl.text;
-    widget.formData['income_source'] = _incomeSource;
-    widget.formData['credit_bureau_status'] = _creditBureauStatus;
-    widget.formData['trade_registration_id'] = _tradeRegCtrl.text;
-    widget.formData['registration_date'] = _registrationDateCtrl.text;
-    widget.formData['tax_id'] = _taxIdCtrl.text;
-    
-    // Save address data
-    widget.formData['house_number'] = _houseNumberCtrl.text;
-    widget.formData['village'] = _villageCtrl.text;
-    widget.formData['lane'] = _laneCtrl.text;
-    widget.formData['road'] = _roadCtrl.text;
-    widget.formData['subdistrict'] = _subdistrictCtrl.text;
-    widget.formData['district'] = _districtCtrl.text;
-    widget.formData['province'] = _provinceCtrl.text;
-    widget.formData['postal_code'] = _postalCodeCtrl.text;
-    
-    widget.formData['current_house_number'] = _currentHouseNumberCtrl.text;
-    widget.formData['current_village'] = _currentVillageCtrl.text;
-    widget.formData['current_lane'] = _currentLaneCtrl.text;
-    widget.formData['current_road'] = _currentRoadCtrl.text;
-    widget.formData['current_subdistrict'] = _currentSubdistrictCtrl.text;
-    widget.formData['current_district'] = _currentDistrictCtrl.text;
-    widget.formData['current_province'] = _currentProvinceCtrl.text;
-    widget.formData['current_postal_code'] = _currentPostalCodeCtrl.text;
-    
-    widget.formData['work_address'] = _workAddressCtrl.text;
-    widget.formData['work_subdistrict'] = _workSubdistrictCtrl.text;
-    widget.formData['work_district'] = _workDistrictCtrl.text;
-    widget.formData['work_province'] = _workProvinceCtrl.text;
-    widget.formData['work_postal_code'] = _workPostalCodeCtrl.text;
-    widget.formData['work_phone'] = _workPhoneCtrl.text;
-    
-    widget.formData['delivery_same_as_registered'] = _deliverySameAsRegistered;
-    widget.formData['delivery_house_number'] = _deliveryHouseNumberCtrl.text;
-    widget.formData['delivery_village'] = _deliveryVillageCtrl.text;
-    widget.formData['delivery_lane'] = _deliveryLaneCtrl.text;
-    widget.formData['delivery_road'] = _deliveryRoadCtrl.text;
-    widget.formData['delivery_subdistrict'] = _deliverySubdistrictCtrl.text;
-    widget.formData['delivery_district'] = _deliveryDistrictCtrl.text;
-    widget.formData['delivery_province'] = _deliveryProvinceCtrl.text;
-    widget.formData['delivery_postal_code'] = _deliveryPostalCodeCtrl.text;
+  void _save() {
+    final d = widget.formData;
+    d['borrower_type'] = _borrowerType;
+    d['prefix'] = _prefix;
+    d['first_name'] = _firstNameCtrl.text;
+    d['last_name'] = _lastNameCtrl.text;
+    d['gender'] = _gender;
+    d['id_card'] = _idCardCtrl.text;
+    d['id_card_issue_date'] = _idCardIssueDateCtrl.text;
+    d['id_card_expiry_date'] = _idCardExpiryDateCtrl.text;
+    d['date_of_birth'] = _dateOfBirthCtrl.text;
+    d['age'] = _ageCtrl.text;
+    d['mobile_phone'] = _phoneCtrl.text;
+    d['other_card_type'] = _otherCardType;
+    d['other_card_no'] = _otherCardNoCtrl.text;
+    d['other_card_issue_date'] = _otherCardIssueDateCtrl.text;
+    d['other_card_expiry_date'] = _otherCardExpiryDateCtrl.text;
+    d['company_name'] = _companyCtrl.text;
+    d['occupation'] = _occupation;
+    d['position'] = _positionCtrl.text;
+    d['salary'] = _salaryCtrl.text;
+    d['other_income'] = _otherIncomeCtrl.text;
+    d['income_source'] = _incomeSourceCtrl.text;
+    d['work_phone'] = _workPhoneCtrl.text;
+    d['house_number'] = _houseNoCtrl.text;
+    d['building'] = _buildingCtrl.text;
+    d['floor'] = _floorCtrl.text;
+    d['room'] = _roomCtrl.text;
+    d['village'] = _mooCtrl.text;
+    d['alley'] = _alleyCtrl.text;
+    d['road'] = _roadCtrl.text;
+    d['province'] = _provinceCtrl.text;
+    d['district'] = _amphoeCtrl.text;
+    d['subdistrict'] = _tambonCtrl.text;
+    d['postal_code'] = _zipCtrl.text;
+    d['same_as_registered'] = _sameAsRegistered;
+    d['cur_company'] = _curCompanyCtrl.text;
+    d['cur_house_number'] = _curHouseNoCtrl.text;
+    d['cur_building'] = _curBuildingCtrl.text;
+    d['cur_floor'] = _curFloorCtrl.text;
+    d['cur_room'] = _curRoomCtrl.text;
+    d['cur_village'] = _curMooCtrl.text;
+    d['cur_alley'] = _curAlleyCtrl.text;
+    d['cur_road'] = _curRoadCtrl.text;
+    d['cur_province'] = _curProvinceCtrl.text;
+    d['cur_district'] = _curAmphoeCtrl.text;
+    d['cur_subdistrict'] = _curTambonCtrl.text;
+    d['cur_postal_code'] = _curZipCtrl.text;
+    d['work_house_number'] = _workHouseNoCtrl.text;
+    d['work_building'] = _workBuildingCtrl.text;
+    d['work_floor'] = _workFloorCtrl.text;
+    d['work_room'] = _workRoomCtrl.text;
+    d['work_village'] = _workMooCtrl.text;
+    d['work_alley'] = _workAlleyCtrl.text;
+    d['work_road'] = _workRoadCtrl.text;
+    d['work_province'] = _workProvinceCtrl.text;
+    d['work_district'] = _workAmphoeCtrl.text;
+    d['work_subdistrict'] = _workTambonCtrl.text;
+    d['work_postal_code'] = _workZipCtrl.text;
+    d['delivery_choice'] = _deliveryChoice;
+    d['del_house_number'] = _delHouseNoCtrl.text;
+    d['del_village'] = _delMooCtrl.text;
+    d['del_alley'] = _delAlleyCtrl.text;
+    d['del_road'] = _delRoadCtrl.text;
+    d['del_subdistrict'] = _delTambonCtrl.text;
+    d['del_district'] = _delAmphoeCtrl.text;
+    d['del_province'] = _delProvinceCtrl.text;
+    d['del_postal_code'] = _delZipCtrl.text;
+    d['trade_registration_id'] = _tradeRegCtrl.text;
+    d['registration_date'] = _regDateCtrl.text;
+    d['tax_id'] = _taxIdCtrl.text;
+    d['credit_bureau_result'] = _creditBureauResult;
   }
 
+  void _calcAge(String dob) {
+    try {
+      final p = dob.split('/');
+      if (p.length != 3) return;
+      final birth =
+          DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
+      final now = DateTime.now();
+      int age = now.year - birth.year;
+      if (now.month < birth.month ||
+          (now.month == birth.month && now.day < birth.day)) {
+        age--;
+      }
+      setState(() => _ageCtrl.text = age.toString());
+    } catch (_) {}
+  }
+
+  // ════════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -230,171 +294,263 @@ class _Step1ScreenState extends State<Step1Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // === Section: ประเภทผู้เช่าซื้อ ===
-          _buildSection(
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [1] ประเภทผู้เช่าซื้อ
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
             icon: FontAwesomeIcons.users,
             title: 'ประเภทผู้เช่าซื้อ',
             children: [
-              _buildRadioGroup('ประเภทผู้กู้', _borrowerType, {
+              _radio('ประเภทผู้กู้', _borrowerType, {
                 'individual': 'บุคคลธรรมดา',
                 'juristic': 'นิติบุคคล',
-              }, (v) => setState(() => _borrowerType = v ?? 'individual')),
+              }, (v) => setState(() => _borrowerType = v!)),
             ],
           ),
 
-          SizedBox(height: 20.h),
+          SizedBox(height: 14.h),
 
-          // === Section: ข้อมูลส่วนตัว ===
-          _buildSection(
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [2] ข้อมูลส่วนตัว
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
             icon: FontAwesomeIcons.idCard,
             title: 'ข้อมูลส่วนตัว',
             children: [
-              _buildDropdown('คำนำหน้า', _prefix, ['นาย', 'นาง', 'นางสาว'], (v) => setState(() => _prefix = v ?? 'นาย')),
-              _buildTextField('ชื่อ', _firstNameCtrl),
-              _buildTextField('นามสกุล', _lastNameCtrl),
-              _buildDropdown('เพศ', _gender, ['ชาย', 'หญิง'], (v) => setState(() => _gender = v ?? 'ชาย')),
-              _buildDropdown('สถานะภาพ', _maritalStatus, ['โสด', 'สมรส', 'หย่า', 'ม่าย'], (v) => setState(() => _maritalStatus = v ?? 'โสด')),
-              _buildTextField('เลขบัตรประชาชน', _idCardCtrl, keyboardType: TextInputType.number),
-              _buildTextField('วันออกบัตร', _idCardIssueDateCtrl, onTap: () => _selectDate(context, _idCardIssueDateCtrl)),
-              _buildTextField('วันหมดอายุ', _idCardExpiryDateCtrl, onTap: () => _selectDate(context, _idCardExpiryDateCtrl)),
-              _buildTextField('วันเกิด', _dateOfBirthCtrl, onTap: () => _selectDate(context, _dateOfBirthCtrl)),
-              _buildDropdown('เชื้อชาติ', _ethnicity, ['ไทย', 'อื่นๆ'], (v) => setState(() => _ethnicity = v ?? 'ไทย')),
-              _buildDropdown('สัญชาติ', _nationality, ['ไทย', 'อื่นๆ'], (v) => setState(() => _nationality = v ?? 'ไทย')),
-              _buildDropdown('ศาสนา', _religion, ['พุทธ', 'อิสลาม', 'คริสต์', 'อื่นๆ'], (v) => setState(() => _religion = v ?? 'พุทธ')),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ข้อมูลติดต่อ ===
-          _buildSection(
-            icon: FontAwesomeIcons.phone,
-            title: 'ข้อมูลติดต่อ',
-            children: [
-              _buildTextField('เบอร์โทรศัพท์มือถือ', _phoneCtrl, keyboardType: TextInputType.phone),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ข้อมูลการทำงาน ===
-          _buildSection(
-            icon: FontAwesomeIcons.briefcase,
-            title: 'ข้อมูลการทำงาน',
-            children: [
-              _buildTextField('ชื่อบริษัท/หน่วยงาน', _companyCtrl),
-              _buildTextField('อาชีพ', _occupationCtrl),
-              _buildTextField('ตำแหน่ง', _positionCtrl),
-              _buildTextField('เงินเดือน (บาท)', _salaryCtrl, keyboardType: TextInputType.number),
-              _buildTextField('รายได้อื่น (บาท)', _otherIncomeCtrl, keyboardType: TextInputType.number),
-              _buildDropdown('แหล่งรายได้', _incomeSource, ['เงินเดือน', 'ธุรกิจส่วนตัว', 'อื่นๆ'], (v) => setState(() => _incomeSource = v ?? 'เงินเดือน')),
-              _buildDropdown('สถานะเครดิตบูโร', _creditBureauStatus, ['ปกติ', 'ค้างชำระ', 'อื่นๆ'], (v) => setState(() => _creditBureauStatus = v ?? 'ปกติ')),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ที่อยู่ตามทะเบียนบ้าน ===
-          _buildSection(
-            icon: FontAwesomeIcons.home,
-            title: 'ที่อยู่ตามทะเบียนบ้าน',
-            children: [
-              _buildTextField('บ้านเลขที่', _houseNumberCtrl),
-              _buildTextField('หมู่', _villageCtrl),
-              _buildTextField('ตรอก', _laneCtrl),
-              _buildTextField('ซอย', _roadCtrl),
-              _buildTextField('ถนน', _roadCtrl),
-              _buildTextField('ตำบล/แขวง', _subdistrictCtrl),
-              _buildTextField('อำเภอ/เขต', _districtCtrl),
-              _buildTextField('จังหวัด', _provinceCtrl),
-              _buildTextField('รหัสไปรษณีย์', _postalCodeCtrl, keyboardType: TextInputType.number),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ที่อยู่ปัจจุบัน ===
-          _buildSection(
-            icon: FontAwesomeIcons.locationDot,
-            title: 'ที่อยู่ปัจจุบัน',
-            children: [
-              _buildTextField('บ้านเลขที่', _currentHouseNumberCtrl),
-              _buildTextField('หมู่', _currentVillageCtrl),
-              _buildTextField('ตรอก', _currentLaneCtrl),
-              _buildTextField('ซอย', _currentRoadCtrl),
-              _buildTextField('ถนน', _currentRoadCtrl),
-              _buildTextField('ตำบล/แขวง', _currentSubdistrictCtrl),
-              _buildTextField('อำเภอ/เขต', _currentDistrictCtrl),
-              _buildTextField('จังหวัด', _currentProvinceCtrl),
-              _buildTextField('รหัสไปรษณีย์', _currentPostalCodeCtrl, keyboardType: TextInputType.number),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ที่อยู่ที่ทำงาน ===
-          _buildSection(
-            icon: FontAwesomeIcons.building,
-            title: 'ที่อยู่ที่ทำงาน',
-            children: [
-              _buildTextField('ที่อยู่', _workAddressCtrl),
-              _buildTextField('ตำบล/แขวง', _workSubdistrictCtrl),
-              _buildTextField('อำเภอ/เขต', _workDistrictCtrl),
-              _buildTextField('จังหวัด', _workProvinceCtrl),
-              _buildTextField('รหัสไปรษณีย์', _workPostalCodeCtrl, keyboardType: TextInputType.number),
-              _buildTextField('โทรศัพท์ที่ทำงาน', _workPhoneCtrl, keyboardType: TextInputType.phone),
-            ],
-          ),
-
-          SizedBox(height: 20.h),
-
-          // === Section: ที่อยู่จัดส่งเอกสาร ===
-          _buildSection(
-            icon: FontAwesomeIcons.truck,
-            title: 'ที่อยู่จัดส่งเอกสาร',
-            children: [
-              _buildRadioGroup('เลือกที่อยู่จัดส่ง', _deliverySameAsRegistered ? 'registered' : 'other', {
-                'registered': 'เหมือนทะเบียนบ้าน',
-                'current': 'เหมือนที่อยู่ปัจจุบัน',
-                'other': 'ที่อยู่อื่น',
-              }, (v) {
-                setState(() {
-                  _deliverySameAsRegistered = v == 'registered';
-                });
-              }),
-              if (!_deliverySameAsRegistered) ...[
-                _buildTextField('บ้านเลขที่', _deliveryHouseNumberCtrl),
-                _buildTextField('หมู่', _deliveryVillageCtrl),
-                _buildTextField('ตรอก', _deliveryLaneCtrl),
-                _buildTextField('ซอย', _deliveryRoadCtrl),
-                _buildTextField('ถนน', _deliveryRoadCtrl),
-                _buildTextField('ตำบล/แขวง', _deliverySubdistrictCtrl),
-                _buildTextField('อำเภอ/เขต', _deliveryDistrictCtrl),
-                _buildTextField('จังหวัด', _deliveryProvinceCtrl),
-                _buildTextField('รหัสไปรษณีย์', _deliveryPostalCodeCtrl, keyboardType: TextInputType.number),
+              _dropdown('คำนำหน้า', _prefix,
+                  ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'],
+                  (v) => setState(() => _prefix = v!)),
+              _field('ชื่อ *', _firstNameCtrl),
+              _field('นามสกุล *', _lastNameCtrl),
+              _field('เลขบัตรประชาชน (13 หลัก) *', _idCardCtrl,
+                  kb: TextInputType.number),
+              _field('วันออกบัตร', _idCardIssueDateCtrl, isDate: true),
+              _field('วันหมดอายุ', _idCardExpiryDateCtrl, isDate: true),
+              _field('วันเกิด *', _dateOfBirthCtrl,
+                  isDate: true, onDatePicked: _calcAge),
+              _field('อายุ (ปี)', _ageCtrl,
+                  readOnly: true, kb: TextInputType.number),
+              _dropdown('เพศ', _gender, ['ชาย', 'หญิง'],
+                  (v) => setState(() => _gender = v!)),
+              _field('เบอร์โทรศัพท์มือถือ *', _phoneCtrl,
+                  kb: TextInputType.phone),
+              _dropdown('บัตรอื่นๆ', _otherCardType,
+                  ['', 'ใบขับขี่', 'พาสปอร์ต', 'บัตรข้าราชการ', 'อื่นๆ'],
+                  (v) => setState(() => _otherCardType = v!)),
+              if (_otherCardType.isNotEmpty) ...[
+                _field('เลขบัตร', _otherCardNoCtrl),
+                _row2(
+                  _fieldHalf('วันออกบัตร', _otherCardIssueDateCtrl, isDate: true),
+                  _fieldHalf('วันบัตรหมดอายุ', _otherCardExpiryDateCtrl, isDate: true),
+                ),
               ],
             ],
           ),
 
-          // === Section: ข้อมูลนิติบุคคล (แสดงเฉพาะเมื่อเลือกนิติบุคคล) ===
+          SizedBox(height: 14.h),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [3] ที่อยู่ตามทะเบียนบ้าน
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
+            icon: FontAwesomeIcons.houseChimney,
+            title: 'ที่อยู่ตามทะเบียนบ้าน',
+            children: [
+              _field('เลขที่', _houseNoCtrl),
+              _field('อาคาร/หมู่บ้าน', _buildingCtrl),
+              _field('ชั้นที่', _floorCtrl),
+              _field('เลขที่ห้อง', _roomCtrl),
+              _field('หมู่', _mooCtrl, kb: TextInputType.number),
+              _field('ซอย', _alleyCtrl),
+              _field('ถนน', _roadCtrl),
+              _field('จังหวัด', _provinceCtrl),
+              _field('อำเภอ/เขต', _amphoeCtrl),
+              _field('ตำบล/แขวง', _tambonCtrl),
+              _field('รหัสไปรษณีย์', _zipCtrl,
+                  kb: TextInputType.number),
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [4] ที่อยู่ปัจจุบัน
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
+            icon: FontAwesomeIcons.locationDot,
+            title: 'ที่อยู่ปัจจุบัน',
+            children: [
+              // Checkbox ที่อยู่เดียวกับทะเบียนบ้าน
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: Checkbox(
+                        value: _sameAsRegistered,
+                        activeColor: navy,
+                        onChanged: (v) {
+                          setState(() {
+                            _sameAsRegistered = v ?? false;
+                            if (_sameAsRegistered) {
+                              _curHouseNoCtrl.text = _houseNoCtrl.text;
+                              _curBuildingCtrl.text = _buildingCtrl.text;
+                              _curFloorCtrl.text = _floorCtrl.text;
+                              _curRoomCtrl.text = _roomCtrl.text;
+                              _curMooCtrl.text = _mooCtrl.text;
+                              _curAlleyCtrl.text = _alleyCtrl.text;
+                              _curRoadCtrl.text = _roadCtrl.text;
+                              _curProvinceCtrl.text = _provinceCtrl.text;
+                              _curAmphoeCtrl.text = _amphoeCtrl.text;
+                              _curTambonCtrl.text = _tambonCtrl.text;
+                              _curZipCtrl.text = _zipCtrl.text;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text('ที่อยู่เดียวกับทะเบียนบ้าน',
+                        style: GoogleFonts.kanit(
+                            fontSize: 13.sp,
+                            color: const Color(0xFF374151))),
+                  ],
+                ),
+              ),
+              _field('บริษัท/ห้างร้าน/นิติบุคคล', _curCompanyCtrl),
+              _field('เลขที่', _curHouseNoCtrl),
+              _field('อาคาร/หมู่บ้าน', _curBuildingCtrl),
+              _field('ชั้นที่', _curFloorCtrl),
+              _field('เลขที่ห้อง', _curRoomCtrl),
+              _field('หมู่', _curMooCtrl, kb: TextInputType.number),
+              _field('ซอย', _curAlleyCtrl),
+              _field('ถนน', _curRoadCtrl),
+              _field('จังหวัด', _curProvinceCtrl),
+              _field('อำเภอ/เขต', _curAmphoeCtrl),
+              _field('ตำบล/แขวง', _curTambonCtrl),
+              _field('รหัสไปรษณีย์', _curZipCtrl,
+                  kb: TextInputType.number),
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [5] ข้อมูลที่ทำงาน / รายได้
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
+            icon: FontAwesomeIcons.briefcase,
+            title: 'ข้อมูลที่ทำงาน',
+            children: [
+              _field('ชื่อบริษัท', _companyCtrl),
+              _dropdown('อาชีพ', _occupation,
+                  ['', 'พนักงานบริษัทเอกชน', 'ข้าราชการ', 'ธุรกิจส่วนตัว',
+                   'เกษตรกร', 'รับจ้างทั่วไป', 'อื่นๆ'],
+                  (v) => setState(() => _occupation = v!)),
+              _field('ตำแหน่ง', _positionCtrl),
+              _field('เงินเดือน', _salaryCtrl,
+                  kb: TextInputType.number),
+              _field('รายได้อื่นๆ', _otherIncomeCtrl,
+                  kb: TextInputType.number),
+              _field('แหล่งที่มา', _incomeSourceCtrl),
+
+              // Sub-header: ที่อยู่ที่ทำงาน
+              Padding(
+                padding: EdgeInsets.only(top: 6.h, bottom: 10.h),
+                child: Text('ที่อยู่ที่ทำงาน',
+                    style: GoogleFonts.kanit(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: navy)),
+              ),
+              _field('เลขที่', _workHouseNoCtrl),
+              _field('อาคาร/หมู่บ้าน', _workBuildingCtrl),
+              _field('ชั้นที่', _workFloorCtrl),
+              _field('เลขที่ห้อง', _workRoomCtrl),
+              _field('หมู่', _workMooCtrl, kb: TextInputType.number),
+              _field('ซอย', _workAlleyCtrl),
+              _field('ถนน', _workRoadCtrl),
+              _field('จังหวัด', _workProvinceCtrl),
+              _field('อำเภอ/เขต', _workAmphoeCtrl),
+              _field('ตำบล/แขวง', _workTambonCtrl),
+              _field('รหัสไปรษณีย์', _workZipCtrl,
+                  kb: TextInputType.number),
+              _field('เบอร์โทรศัพท์ที่ทำงาน', _workPhoneCtrl,
+                  kb: TextInputType.phone),
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [6] ที่อยู่จัดส่งเอกสาร
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
+            icon: FontAwesomeIcons.envelope,
+            title: 'ที่อยู่จัดส่งเอกสาร',
+            children: [
+              _radio('', _deliveryChoice, {
+                'registered': 'ตามทะเบียนบ้าน',
+                'current': 'ตามที่อยู่ปัจจุบัน',
+                'work': 'ที่ทำงาน',
+                'other': 'อื่นๆ',
+              }, (v) => setState(() => _deliveryChoice = v!)),
+              if (_deliveryChoice == 'other') ...[
+                _field('เลขที่', _delHouseNoCtrl),
+                _field('หมู่', _delMooCtrl,
+                    kb: TextInputType.number),
+                _field('ซอย', _delAlleyCtrl),
+                _field('ถนน', _delRoadCtrl),
+                _field('จังหวัด', _delProvinceCtrl),
+                _field('อำเภอ/เขต', _delAmphoeCtrl),
+                _field('ตำบล/แขวง', _delTambonCtrl),
+                _field('รหัสไปรษณีย์', _delZipCtrl,
+                    kb: TextInputType.number),
+              ],
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [7] ข้อมูลเครดิตบูโร
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          _section(
+            icon: FontAwesomeIcons.creditCard,
+            title: 'ข้อมูลเครดิตบูโร',
+            children: [
+              _radio('ตรวจเครดิตบูโร', _creditBureauResult, {
+                'found': 'พบ',
+                'not_found': 'ไม่พบ',
+              }, (v) => setState(() => _creditBureauResult = v!)),
+            ],
+          ),
+
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          // [7] ข้อมูลนิติบุคคล (เฉพาะเมื่อเลือกนิติบุคคล)
+          // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           if (_borrowerType == 'juristic') ...[
-            SizedBox(height: 20.h),
-            _buildSection(
-              icon: FontAwesomeIcons.building,
+            SizedBox(height: 14.h),
+            _section(
+              icon: FontAwesomeIcons.buildingColumns,
               title: 'ข้อมูลนิติบุคคล',
               children: [
-                _buildTextField('เลขทะเบียนพาณิชย์', _tradeRegCtrl),
-                _buildTextField('วันที่จดทะเบียน', _registrationDateCtrl, onTap: () => _selectDate(context, _registrationDateCtrl)),
-                _buildTextField('เลขประจำตัวผู้เสียภาษี', _taxIdCtrl),
+                _field('เลขทะเบียนพาณิชย์', _tradeRegCtrl),
+                _field('วันที่จดทะเบียน', _regDateCtrl,
+                    isDate: true),
+                _field('เลขประจำตัวผู้เสียภาษี', _taxIdCtrl,
+                    kb: TextInputType.number),
               ],
             ),
           ],
 
           SizedBox(height: 20.h),
 
-          // === Info Box ===
+          // Info bar
           Container(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: const Color(0xFFeff6ff),
               borderRadius: BorderRadius.circular(12.r),
@@ -402,25 +558,37 @@ class _Step1ScreenState extends State<Step1Screen> {
             ),
             child: Row(
               children: [
-                Icon(FontAwesomeIcons.circleInfo, color: navy, size: 16.sp),
-                SizedBox(width: 12.w),
+                Icon(FontAwesomeIcons.circleInfo,
+                    color: navy, size: 15.sp),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'กรุณาตรวจสอบข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ',
-                    style: GoogleFonts.kanit(fontSize: 12.sp, color: const Color(0xFF6b7280)),
+                    style: GoogleFonts.kanit(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF6b7280)),
                   ),
                 ),
               ],
             ),
           ),
+
+          SizedBox(height: 16.h),
         ],
       ),
     );
   }
 
-  // === Reusable Widgets (เหมือน Step2) ===
+  // ════════════════════════════════════════════════════════
+  // Widget Builders
+  // ════════════════════════════════════════════════════════
 
-  Widget _buildSection({required IconData icon, required String title, required List<Widget> children}) {
+  /// Section card
+  Widget _section({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -431,93 +599,219 @@ class _Step1ScreenState extends State<Step1Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Container(
             padding: EdgeInsets.only(bottom: 8.h),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: navy, width: 3)),
+              border:
+                  Border(bottom: BorderSide(color: navy, width: 3)),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 36.w, height: 36.w,
+                  width: 34.w,
+                  height: 34.w,
                   decoration: const BoxDecoration(
-                    color: navy,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(child: Icon(icon, color: Colors.white, size: 16.sp)),
+                      color: navy, shape: BoxShape.circle),
+                  child: Center(
+                      child: Icon(icon,
+                          color: Colors.white, size: 15.sp)),
                 ),
                 SizedBox(width: 10.w),
-                Text(title, style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: navy)),
+                Expanded(
+                  child: Text(title,
+                      style: GoogleFonts.kanit(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: navy)),
+                ),
               ],
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
           ...children,
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController ctrl, {TextInputType? keyboardType, bool readOnly = false, VoidCallback? onTap}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
-          SizedBox(height: 6.h),
-          TextField(
-            controller: ctrl,
-            keyboardType: keyboardType,
-            readOnly: onTap != null || readOnly,
-            onTap: onTap,
-            style: GoogleFonts.kanit(fontSize: 14.sp),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: readOnly ? const Color(0xFFf3f4f6) : Colors.white,
-              contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-              suffixIcon: onTap != null ? Icon(FontAwesomeIcons.calendar, size: 14.sp, color: navy) : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: borderColor, width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: borderColor, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: navy, width: 2),
-              ),
-            ),
-          ),
-        ],
-      ),
+  /// 2-column row
+  Widget _row2(Widget left, Widget right) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: left),
+        SizedBox(width: 10.w),
+        Expanded(child: right),
+      ],
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+  /// Full-width text field
+  Widget _field(
+    String label,
+    TextEditingController ctrl, {
+    TextInputType? kb,
+    bool readOnly = false,
+    bool isDate = false,
+    void Function(String)? onDatePicked,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: _fieldContent(label, ctrl,
+          kb: kb, readOnly: readOnly, isDate: isDate,
+          onDatePicked: onDatePicked),
+    );
+  }
+
+  /// Half-width text field (for use inside _row2)
+  Widget _fieldHalf(
+    String label,
+    TextEditingController ctrl, {
+    TextInputType? kb,
+    bool readOnly = false,
+    bool isDate = false,
+    void Function(String)? onDatePicked,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: _fieldContent(label, ctrl,
+          kb: kb,
+          readOnly: readOnly,
+          isDate: isDate,
+          onDatePicked: onDatePicked),
+    );
+  }
+
+  Widget _fieldContent(
+    String label,
+    TextEditingController ctrl, {
+    TextInputType? kb,
+    bool readOnly = false,
+    bool isDate = false,
+    void Function(String)? onDatePicked,
+  }) {
+    final isReadOnly = readOnly || isDate;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.kanit(
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF374151))),
+        SizedBox(height: 5.h),
+        TextField(
+          controller: ctrl,
+          keyboardType: kb,
+          readOnly: isReadOnly,
+          onTap: isDate
+              ? () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now()
+                        .add(const Duration(days: 365 * 50)),
+                    locale: const Locale('th', 'TH'),
+                    builder: (ctx, child) => Theme(
+                      data: Theme.of(ctx).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: navy,
+                          onPrimary: Colors.white,
+                          surface: Color(0xFFf8fafc),
+                          onSurface: Color(0xFF1e293b),
+                        ),
+                      ),
+                      child: Localizations.override(
+                        context: ctx,
+                        locale: const Locale('th', 'TH'),
+                        child: child!,
+                      ),
+                    ),
+                  );
+                  if (picked != null) {
+                    final s =
+                        '${picked.day.toString().padLeft(2, '0')}/'
+                        '${picked.month.toString().padLeft(2, '0')}/'
+                        '${picked.year}';
+                    ctrl.text = s;
+                    onDatePicked?.call(s);
+                  }
+                }
+              : null,
+          style: GoogleFonts.kanit(fontSize: 13.sp),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: (readOnly && !isDate)
+                ? const Color(0xFFf3f4f6)
+                : Colors.white,
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w, vertical: 10.h),
+            suffixIcon: isDate
+                ? Icon(FontAwesomeIcons.calendar,
+                    size: 13.sp, color: navy)
+                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.r),
+              borderSide:
+                  const BorderSide(color: borderColor, width: 1.5),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.r),
+              borderSide:
+                  const BorderSide(color: borderColor, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.r),
+              borderSide: const BorderSide(color: navy, width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Dropdown
+  Widget _dropdown(
+    String label,
+    String value,
+    List<String> items,
+    ValueChanged<String?> onChanged,
+  ) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
-          SizedBox(height: 6.h),
+          Text(label,
+              style: GoogleFonts.kanit(
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF374151))),
+          SizedBox(height: 5.h),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: borderColor, width: 2),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: borderColor, width: 1.5),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: items.contains(value) ? value : null,
                 isExpanded: true,
-                style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF1e293b)),
-                hint: Text('— เลือก —', style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF9ca3af))),
-                items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                style: GoogleFonts.kanit(
+                    fontSize: 13.sp,
+                    color: const Color(0xFF1e293b)),
+                hint: Text('— เลือก —',
+                    style: GoogleFonts.kanit(
+                        fontSize: 13.sp,
+                        color: const Color(0xFF9ca3af))),
+                items: items
+                    .map((e) => DropdownMenuItem(
+                        value: e, child: Text(e)))
+                    .toList(),
                 onChanged: onChanged,
               ),
             ),
@@ -527,118 +821,82 @@ class _Step1ScreenState extends State<Step1Screen> {
     );
   }
 
-  Widget _buildRadioGroup(String label, String value, Map<String, String> options, ValueChanged<String?> onChanged) {
+  /// Radio group
+  Widget _radio(
+    String label,
+    String value,
+    Map<String, String> options,
+    ValueChanged<String?> onChanged,
+  ) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.kanit(fontSize: 13.sp, fontWeight: FontWeight.w500, color: const Color(0xFF374151))),
-          SizedBox(height: 8.h),
+          Text(label,
+              style: GoogleFonts.kanit(
+                  fontSize: 12.5.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF374151))),
+          SizedBox(height: 6.h),
           Wrap(
-            spacing: 20.w,
-            children: options.entries.map((e) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Radio<String>(value: e.key, groupValue: value, onChanged: onChanged, activeColor: navy),
-                Text(e.value, style: GoogleFonts.kanit(fontSize: 14.sp, color: const Color(0xFF4b5563))),
-              ],
-            )).toList(),
+            spacing: 16.w,
+            children: options.entries
+                .map((e) => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Radio<String>(
+                          value: e.key,
+                          groupValue: value,
+                          onChanged: onChanged,
+                          activeColor: navy,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        Text(e.value,
+                            style: GoogleFonts.kanit(
+                                fontSize: 13.sp,
+                                color: const Color(0xFF4b5563))),
+                      ],
+                    ))
+                .toList(),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 50)),
-      locale: const Locale('th', 'TH'),
-      // แสดงปฏิทินเป็น พ.ศ.
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: navy,
-              onPrimary: Colors.white,
-              surface: Color(0xFFf8fafc),
-              onSurface: Color(0xFF1e293b),
-            ),
-          ),
-          child: Localizations.override(
-            context: context,
-            locale: const Locale('th', 'TH'),
-            child: child!,
-          ),
-        );
-      },
-    );
-
-    if (picked != null) {
-      // บันทึกเป็น ค.ศ. (DateTime ของ Flutter เป็น ค.ศ. เสมอ)
-      controller.text = '${picked.day.toString().padLeft(2, '0')}/'
-          '${picked.month.toString().padLeft(2, '0')}/'
-          '${picked.year}';
-    }
-  }
-
+  // ════════════════════════════════════════════════════════
   @override
   void dispose() {
-    _saveToFormData();
-    _firstNameCtrl.dispose();
-    _lastNameCtrl.dispose();
-    _idCardCtrl.dispose();
-    _phoneCtrl.dispose();
-    _companyCtrl.dispose();
-    _occupationCtrl.dispose();
-    _positionCtrl.dispose();
-    _salaryCtrl.dispose();
-    _otherIncomeCtrl.dispose();
-    _taxIdCtrl.dispose();
-    _tradeRegCtrl.dispose();
-    _idCardIssueDateCtrl.dispose();
-    _idCardExpiryDateCtrl.dispose();
-    _dateOfBirthCtrl.dispose();
-    _registrationDateCtrl.dispose();
-    
-    // Dispose address controllers
-    _houseNumberCtrl.dispose();
-    _villageCtrl.dispose();
-    _laneCtrl.dispose();
-    _roadCtrl.dispose();
-    _subdistrictCtrl.dispose();
-    _districtCtrl.dispose();
-    _provinceCtrl.dispose();
-    _postalCodeCtrl.dispose();
-    
-    _currentHouseNumberCtrl.dispose();
-    _currentVillageCtrl.dispose();
-    _currentLaneCtrl.dispose();
-    _currentRoadCtrl.dispose();
-    _currentSubdistrictCtrl.dispose();
-    _currentDistrictCtrl.dispose();
-    _currentProvinceCtrl.dispose();
-    _currentPostalCodeCtrl.dispose();
-    
-    _workAddressCtrl.dispose();
-    _workSubdistrictCtrl.dispose();
-    _workDistrictCtrl.dispose();
-    _workProvinceCtrl.dispose();
-    _workPostalCodeCtrl.dispose();
-    _workPhoneCtrl.dispose();
-    
-    _deliveryHouseNumberCtrl.dispose();
-    _deliveryVillageCtrl.dispose();
-    _deliveryLaneCtrl.dispose();
-    _deliveryRoadCtrl.dispose();
-    _deliverySubdistrictCtrl.dispose();
-    _deliveryDistrictCtrl.dispose();
-    _deliveryProvinceCtrl.dispose();
-    _deliveryPostalCodeCtrl.dispose();
-    
+    _save();
+    for (final c in [
+      _firstNameCtrl, _lastNameCtrl, _idCardCtrl,
+      _idCardIssueDateCtrl, _idCardExpiryDateCtrl,
+      _dateOfBirthCtrl, _ageCtrl, _phoneCtrl, _prefixCtrl,
+      _otherCardNoCtrl, _otherCardIssueDateCtrl,
+      _otherCardExpiryDateCtrl,
+      _companyCtrl, _positionCtrl,
+      _salaryCtrl, _otherIncomeCtrl, _incomeSourceCtrl,
+      _workPhoneCtrl,
+      _houseNoCtrl, _buildingCtrl, _floorCtrl, _roomCtrl,
+      _mooCtrl, _alleyCtrl, _roadCtrl,
+      _tambonCtrl, _amphoeCtrl, _provinceCtrl, _zipCtrl,
+      _curCompanyCtrl, _curHouseNoCtrl, _curBuildingCtrl,
+      _curFloorCtrl, _curRoomCtrl,
+      _curMooCtrl, _curAlleyCtrl, _curRoadCtrl,
+      _curTambonCtrl, _curAmphoeCtrl, _curProvinceCtrl,
+      _curZipCtrl,
+      _workHouseNoCtrl, _workBuildingCtrl, _workFloorCtrl,
+      _workRoomCtrl, _workMooCtrl, _workAlleyCtrl,
+      _workRoadCtrl, _workTambonCtrl, _workAmphoeCtrl,
+      _workProvinceCtrl, _workZipCtrl,
+      _delHouseNoCtrl, _delMooCtrl, _delAlleyCtrl, _delRoadCtrl,
+      _delTambonCtrl, _delAmphoeCtrl, _delProvinceCtrl,
+      _delZipCtrl, _tradeRegCtrl, _regDateCtrl, _taxIdCtrl,
+    ]) {
+      c.dispose();
+    }
     super.dispose();
   }
 }

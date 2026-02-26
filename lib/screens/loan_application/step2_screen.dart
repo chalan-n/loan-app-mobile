@@ -20,6 +20,94 @@ class Step2Screen extends StatefulWidget {
   State<Step2Screen> createState() => _Step2ScreenState();
 }
 
+// Animated Section Widget
+class AnimatedSection extends StatefulWidget {
+  final bool isVisible;
+  final Widget child;
+  final Duration duration;
+
+  const AnimatedSection({
+    super.key,
+    required this.isVisible,
+    required this.child,
+    this.duration = const Duration(milliseconds: 500),
+  });
+
+  @override
+  State<AnimatedSection> createState() => _AnimatedSectionState();
+}
+
+class _AnimatedSectionState extends State<AnimatedSection>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3), // Start from below
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    if (widget.isVisible) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(AnimatedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: child,
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
 class _Step2ScreenState extends State<Step2Screen> {
   static const Color navy = Color(0xFF1e3a8a);
   static const Color light = Color(0xFFf8fafc);
@@ -44,11 +132,36 @@ class _Step2ScreenState extends State<Step2Screen> {
   String _carCondition = 'OLD';
   String _licenseProvince = '';
   bool _isRefinance = false;
+  
+  // Animation controllers
+  bool _showCarInfoSection = false;
+  bool _showVatSection = false;
 
   @override
   void initState() {
     super.initState();
     _loadFromFormData();
+    _startAnimations();
+  }
+
+  void _startAnimations() {
+    // เริ่มแสดง Card แรกทันที
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (mounted) {
+        setState(() {
+          _showCarInfoSection = true;
+        });
+      }
+    });
+    
+    // เริ่มแสดง Card ที่สองหลังจาก Card แรก 300ms
+    Future.delayed(Duration(milliseconds: 400), () {
+      if (mounted) {
+        setState(() {
+          _showVatSection = true;
+        });
+      }
+    });
   }
 
   void _loadFromFormData() {
@@ -102,38 +215,44 @@ class _Step2ScreenState extends State<Step2Screen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // === Section: ข้อมูลรถ ===
-          _buildSection(
-            icon: FontAwesomeIcons.car,
-            title: 'ข้อมูลรถ',
-            children: [
-              _buildTextField('รหัสรถ', _carCodeCtrl, readOnly: true),
-              _buildDropdown('ประเภทรถยนต์', _carType, [''], (v) => setState(() => _carType = v ?? '')),
-              _buildDropdown('ยี่ห้อ', _carBrand, [''], (v) => setState(() => _carBrand = v ?? '')),
-              _buildTextField('รุ่น', _carModelCtrl),
-              _buildTextField('ปีรถ', _carYearCtrl, keyboardType: TextInputType.number),
-              _buildDropdown('สี', _carColor, [''], (v) => setState(() => _carColor = v ?? '')),
-              _buildTextField('น้ำหนักรถ', _carWeightCtrl, keyboardType: TextInputType.number),
-              _buildTextField('จำนวน CC', _carCCCtrl, keyboardType: TextInputType.number),
-              _buildTextField('เลขไมล์', _carMileageCtrl, keyboardType: TextInputType.number),
-              _buildDropdown('ประเภทเกียร์', _carGear, ['Manual', 'Automatic'], (v) => setState(() => _carGear = v ?? 'Manual')),
-              _buildTextField('เลขตัวถัง', _carChassisCtrl),
-              _buildTextField('เลขเครื่อง', _carEngineCtrl),
-              _buildDropdown('สภาพรถ', _carCondition, ['OLD', 'NEW'], (v) => setState(() => _carCondition = v ?? 'OLD')),
-              _buildTextField('เลขทะเบียน', _licensePlateCtrl),
-            ],
+          AnimatedSection(
+            isVisible: _showCarInfoSection,
+            child: _buildSection(
+              icon: FontAwesomeIcons.car,
+              title: 'ข้อมูลรถ',
+              children: [
+                _buildTextField('รหัสรถ', _carCodeCtrl, readOnly: true),
+                _buildDropdown('ประเภทรถยนต์', _carType, [''], (v) => setState(() => _carType = v ?? '')),
+                _buildDropdown('ยี่ห้อ', _carBrand, [''], (v) => setState(() => _carBrand = v ?? '')),
+                _buildTextField('รุ่น', _carModelCtrl),
+                _buildTextField('ปีรถ', _carYearCtrl, keyboardType: TextInputType.number),
+                _buildDropdown('สี', _carColor, [''], (v) => setState(() => _carColor = v ?? '')),
+                _buildTextField('น้ำหนักรถ', _carWeightCtrl, keyboardType: TextInputType.number),
+                _buildTextField('จำนวน CC', _carCCCtrl, keyboardType: TextInputType.number),
+                _buildTextField('เลขไมล์', _carMileageCtrl, keyboardType: TextInputType.number),
+                _buildDropdown('ประเภทเกียร์', _carGear, ['Manual', 'Automatic'], (v) => setState(() => _carGear = v ?? 'Manual')),
+                _buildTextField('เลขตัวถัง', _carChassisCtrl),
+                _buildTextField('เลขเครื่อง', _carEngineCtrl),
+                _buildDropdown('สภาพรถ', _carCondition, ['OLD', 'NEW'], (v) => setState(() => _carCondition = v ?? 'OLD')),
+                _buildTextField('เลขทะเบียน', _licensePlateCtrl),
+              ],
+            ),
           ),
 
           SizedBox(height: 20.h),
 
           // === Section: ภาษีมูลค่าเพิ่ม ===
-          _buildSection(
-            icon: FontAwesomeIcons.calculator,
-            title: 'ภาษีมูลค่าเพิ่ม',
-            children: [
-              _buildTextField('อัตรา VAT (%)', _vatRateCtrl, keyboardType: TextInputType.number),
-              _buildTextField('ราคารถ', _carPriceCtrl, keyboardType: TextInputType.number),
-              _buildCheckbox('จำนำ / Refinance', _isRefinance, (v) => setState(() => _isRefinance = v ?? false)),
-            ],
+          AnimatedSection(
+            isVisible: _showVatSection,
+            child: _buildSection(
+              icon: FontAwesomeIcons.calculator,
+              title: 'ภาษีมูลค่าเพิ่ม',
+              children: [
+                _buildTextField('อัตรา VAT (%)', _vatRateCtrl, keyboardType: TextInputType.number),
+                _buildTextField('ราคารถ', _carPriceCtrl, keyboardType: TextInputType.number),
+                _buildCheckbox('จำนำ / Refinance', _isRefinance, (v) => setState(() => _isRefinance = v ?? false)),
+              ],
+            ),
           ),
         ],
       ),

@@ -20,6 +20,94 @@ class Step3Screen extends StatefulWidget {
   State<Step3Screen> createState() => _Step3ScreenState();
 }
 
+// Animated Section Widget
+class AnimatedSection extends StatefulWidget {
+  final bool isVisible;
+  final Widget child;
+  final Duration duration;
+
+  const AnimatedSection({
+    super.key,
+    required this.isVisible,
+    required this.child,
+    this.duration = const Duration(milliseconds: 500),
+  });
+
+  @override
+  State<AnimatedSection> createState() => _AnimatedSectionState();
+}
+
+class _AnimatedSectionState extends State<AnimatedSection>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3), // Start from below
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    if (widget.isVisible) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(AnimatedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: child,
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
 class _Step3ScreenState extends State<Step3Screen> {
   static const Color navy = Color(0xFF1e3a8a);
   static const Color light = Color(0xFFf8fafc);
@@ -43,11 +131,46 @@ class _Step3ScreenState extends State<Step3Screen> {
   String _loanType = '';
   String _transferType = 'company_transfer';
   bool _isLifeInsurance = false;
+  
+  // Animation controllers
+  bool _showContractSection = false;
+  bool _showPaymentSection = false;
+  bool _showFeeSection = false;
 
   @override
   void initState() {
     super.initState();
     _loadFromFormData();
+    _startAnimations();
+  }
+
+  void _startAnimations() {
+    // เริ่มแสดง Card แรกทันที
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (mounted) {
+        setState(() {
+          _showContractSection = true;
+        });
+      }
+    });
+    
+    // เริ่มแสดง Card ที่สองหลังจาก Card แรก 300ms
+    Future.delayed(Duration(milliseconds: 400), () {
+      if (mounted) {
+        setState(() {
+          _showPaymentSection = true;
+        });
+      }
+    });
+    
+    // เริ่มแสดง Card ที่สามหลังจาก Card ที่สอง 300ms
+    Future.delayed(Duration(milliseconds: 700), () {
+      if (mounted) {
+        setState(() {
+          _showFeeSection = true;
+        });
+      }
+    });
   }
 
   void _loadFromFormData() {
@@ -98,43 +221,42 @@ class _Step3ScreenState extends State<Step3Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // === วันที่เซ็นสัญญา ===
-          _buildSection(icon: FontAwesomeIcons.calendarDay, title: 'วันที่เซ็นสัญญา', children: [
-            _buildDateField('วันที่เซ็นสัญญา', _contractSignDateCtrl),
-          ]),
+          AnimatedSection(
+            isVisible: _showContractSection,
+            child: _buildSection(icon: FontAwesomeIcons.calendarDay, title: 'วันที่เซ็นสัญญา', children: [
+              _buildDateField('วันที่เซ็นสัญญา', _contractSignDateCtrl),
+            ]),
+          ),
           SizedBox(height: 20.h),
 
-          // === รายละเอียดสัญญา ===
-          _buildSection(icon: FontAwesomeIcons.fileLines, title: 'รายละเอียดสัญญา', children: [
-            _buildDropdown('ประเภทสินเชื่อ', _loanType, [''], (v) => setState(() => _loanType = v ?? '')),
-            _buildTextField('วงเงินกู้', _loanAmountCtrl, keyboardType: TextInputType.number),
-            _buildTextField('อัตราดอกเบี้ย (%)', _interestRateCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true)),
-            _buildTextField('จำนวนงวด', _installmentsCtrl, keyboardType: TextInputType.number),
-            _buildTextField('ค่างวด', _installmentAmountCtrl, readOnly: true),
-            _buildTextField('เงินดาวน์', _downPaymentCtrl, keyboardType: TextInputType.number),
-            _buildTextField('Beginning', _beginningCtrl, keyboardType: TextInputType.number),
-            _buildTextField('ค่าธรรมเนียม Refinance', _refinanceFeeCtrl, keyboardType: TextInputType.number),
-            _buildDateField('วันเริ่มสัญญา', _contractStartDateCtrl),
-            _buildTextField('ชำระทุกวันที่', _paymentDayCtrl, keyboardType: TextInputType.number),
-          ]),
+          AnimatedSection(
+            isVisible: _showPaymentSection,
+            child: _buildSection(icon: FontAwesomeIcons.fileLines, title: 'รายละเอียดสัญญา', children: [
+              _buildDropdown('ประเภทสินเชื่อ', _loanType, [''], (v) => setState(() => _loanType = v ?? '')),
+              _buildTextField('วงเงินกู้', _loanAmountCtrl, keyboardType: TextInputType.number),
+              _buildTextField('อัตราดอกเบี้ย (%)', _interestRateCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true)),
+              _buildTextField('จำนวนงวด', _installmentsCtrl, keyboardType: TextInputType.number),
+              _buildTextField('ค่างวด', _installmentAmountCtrl, readOnly: true),
+              _buildTextField('เงินดาวน์', _downPaymentCtrl, keyboardType: TextInputType.number),
+              _buildTextField('Beginning', _beginningCtrl, keyboardType: TextInputType.number),
+              _buildTextField('ค่าธรรมเนียม Refinance', _refinanceFeeCtrl, keyboardType: TextInputType.number),
+              _buildDateField('วันเริ่มสัญญา', _contractStartDateCtrl),
+              _buildTextField('ชำระทุกวันที่', _paymentDayCtrl, keyboardType: TextInputType.number),
+            ]),
+          ),
           SizedBox(height: 20.h),
 
-          // === เงื่อนไขการชำระเงิน ===
-          _buildSection(icon: FontAwesomeIcons.moneyCheckDollar, title: 'เงื่อนไขการชำระเงิน', children: [
-            _buildDateField('ชำระงวดแรก', _firstPaymentDateCtrl),
-          ]),
+          AnimatedSection(
+            isVisible: _showFeeSection,
+            child: _buildSection(icon: FontAwesomeIcons.moneyCheckDollar, title: 'เงื่อนไขการชำระเงิน', children: [
+              _buildDateField('ชำระงวดแรก', _firstPaymentDateCtrl),
+              _buildTextField('ค่าธรรมเนียมโอน', _transferFeeCtrl, keyboardType: TextInputType.number),
+              _buildTextField('ค่าภาษี', _taxFeeCtrl, keyboardType: TextInputType.number),
+              _buildTextField('ค่าภาษีอากร', _dutyFeeCtrl, keyboardType: TextInputType.number),
+              _buildCheckbox('มีประกันชีวิต', _isLifeInsurance, (v) => setState(() => _isLifeInsurance = v ?? false)),
+            ]),
+          ),
           SizedBox(height: 20.h),
-
-          // === โอนเล่มทะเบียน ===
-          _buildSection(icon: FontAwesomeIcons.handHoldingDollar, title: 'โอนเล่มทะเบียน', children: [
-            _buildRadioGroup('ประเภทโอนเล่ม', _transferType, {
-              'company_transfer': 'บริษัทโอน',
-              'customer_transfer': 'ลูกค้าโอน',
-            }, (v) => setState(() => _transferType = v ?? 'company_transfer')),
-            _buildTextField('ค่าโอนเล่มทะเบียน', _transferFeeCtrl, keyboardType: TextInputType.number),
-            _buildTextField('ค่าภาษีรถยนต์', _taxFeeCtrl, keyboardType: TextInputType.number),
-            _buildTextField('ค่าธรรมเนียมชุดโอน', _dutyFeeCtrl, keyboardType: TextInputType.number),
-          ]),
         ],
       ),
     );
@@ -221,6 +343,30 @@ class _Step3ScreenState extends State<Step3Screen> {
                 items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: onChanged,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: navy,
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            label,
+            style: GoogleFonts.kanit(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF374151),
             ),
           ),
         ],

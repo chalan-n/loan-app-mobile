@@ -47,6 +47,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   
   // เพิ่มตัวแปรป้องกันการกดซ้ำ
   bool _isNavigating = false;
+  bool _showLoadingOverlay = false;
 
   @override
   void initState() {
@@ -72,46 +73,93 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
+      body: Stack(
         children: [
-          // === Top Header (โลโก้ + ปุ่ม) — ชิดขอบเหมือน Dashboard ===
-          _buildTopHeader(),
-          // === Title Bar ===
-          _buildTitleBar(),
+          // Main Content
+          Column(
+            children: [
+              // === Top Header (โลโก้ + ปุ่ม) — ชิดขอบเหมือน Dashboard ===
+              _buildTopHeader(),
+              // === Title Bar ===
+              _buildTitleBar(),
 
-          // === Content ===
-          Expanded(
-            child: Column(
-              children: [
-                // === Progress Steps ===
-                _buildProgressSteps(),
-                // === Step Content ===
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentStep = index + 1;
-                      });
-                    },
+              // === Content ===
+              Expanded(
+                child: Column(
+                  children: [
+                    // === Progress Steps ===
+                    _buildProgressSteps(),
+                    // === Step Content ===
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentStep = index + 1;
+                          });
+                        },
+                        children: [
+                          Step1Screen(formData: _formData, onNext: _nextStep),
+                          Step2Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step3Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step4Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step5Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step6Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step7Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
+                          Step8Screen(formData: _formData, onPrevious: _previousStep, onSubmit: _submitApplication),
+                        ],
+                      ),
+                    ),
+                    // === Bottom Navigation ===
+                    _buildBottomNavigation(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          // Loading Overlay
+          if (_showLoadingOverlay)
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(24.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Step1Screen(formData: _formData, onNext: _nextStep),
-                      Step2Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step3Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step4Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step5Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step6Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step7Screen(formData: _formData, onNext: _nextStep, onPrevious: _previousStep),
-                      Step8Screen(formData: _formData, onPrevious: _previousStep, onSubmit: _submitApplication),
+                      CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(navy),
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'กำลังโหลด...',
+                        style: GoogleFonts.kanit(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          color: navy,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                // === Bottom Navigation ===
-                _buildBottomNavigation(),
-              ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -347,7 +395,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                   child: Container(
                     height: 50.h,
                     decoration: BoxDecoration(
-                      color: _isNavigating ? gray.withOpacity(0.5) : gray,
+                      color: _isNavigating ? gray.withOpacity(0.3) : gray,
                       borderRadius: BorderRadius.circular(50.r),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 20, offset: const Offset(0, 8)),
@@ -356,18 +404,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // เพิ่ม Loading Indicator
-                        if (_isNavigating)
-                          SizedBox(
-                            width: 14.sp,
-                            height: 14.sp,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        else
-                          Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 14.sp),
+                        Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 14.sp),
                         SizedBox(width: 10.w),
                         Text('ย้อนกลับ', style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
                       ],
@@ -395,7 +432,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                   height: 50.h,
                   decoration: BoxDecoration(
                     color: _isNavigating 
-                        ? (_currentStep == totalSteps ? green.withOpacity(0.5) : navy.withOpacity(0.5))
+                        ? (_currentStep == totalSteps ? green.withOpacity(0.3) : navy.withOpacity(0.3))
                         : (_currentStep == totalSteps ? green : navy),
                     borderRadius: BorderRadius.circular(50.r),
                     boxShadow: [
@@ -410,22 +447,11 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                         style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
                       ),
                       SizedBox(width: 10.w),
-                      // เพิ่ม Loading Indicator
-                      if (_isNavigating)
-                        SizedBox(
-                          width: 14.sp,
-                          height: 14.sp,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      else
-                        Icon(
-                          _currentStep == totalSteps ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.arrowRight,
-                          color: Colors.white,
-                          size: 14.sp,
-                        ),
+                      Icon(
+                        _currentStep == totalSteps ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.arrowRight,
+                        color: Colors.white,
+                        size: 14.sp,
+                      ),
                     ],
                   ),
                 ),
@@ -441,18 +467,20 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
     if (_currentStep < totalSteps && !_isNavigating) {
       setState(() {
         _isNavigating = true;
+        _showLoadingOverlay = true;
       });
       
       if (_pageController.hasClients) {
         _pageController.nextPage(
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 600), // เพิ่ม duration ให้นานขึ้น
           curve: Curves.easeInOutCubic,
         ).then((_) {
           // Reset navigation flag after animation completes
-          Future.delayed(const Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 700), () {
             if (mounted) {
               setState(() {
                 _isNavigating = false;
+                _showLoadingOverlay = false;
               });
             }
           });
@@ -465,18 +493,20 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
     if (_currentStep > 1 && !_isNavigating) {
       setState(() {
         _isNavigating = true;
+        _showLoadingOverlay = true;
       });
       
       if (_pageController.hasClients) {
         _pageController.previousPage(
-          duration: const Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 600), // เพิ่ม duration ให้นานขึ้น
           curve: Curves.easeInOutCubic,
         ).then((_) {
           // Reset navigation flag after animation completes
-          Future.delayed(const Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 700), () {
             if (mounted) {
               setState(() {
                 _isNavigating = false;
+                _showLoadingOverlay = false;
               });
             }
           });
@@ -489,18 +519,20 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
     if (_pageController.hasClients && !_isNavigating) {
       setState(() {
         _isNavigating = true;
+        _showLoadingOverlay = true;
       });
       
       _pageController.animateToPage(
         step - 1,
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 600), // เพิ่ม duration ให้นานขึ้น
         curve: Curves.easeInOutCubic,
       ).then((_) {
         // Reset navigation flag after animation completes
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 700), () {
           if (mounted) {
             setState(() {
               _isNavigating = false;
+              _showLoadingOverlay = false;
             });
           }
         });

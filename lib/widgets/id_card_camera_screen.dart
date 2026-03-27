@@ -37,10 +37,10 @@ class _IDCardCameraScreenState extends State<IDCardCameraScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // ล็อค orientation เป็น landscape เพื่อถ่ายบัตร
+    // ล็อค orientation เป็น portrait เพื่อถ่ายบัตร
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
     ]);
     _initCamera();
   }
@@ -321,14 +321,16 @@ class _IDCardCameraScreenState extends State<IDCardCameraScreen>
   }
 
   /// คำนวณ Rect ของกรอบบัตร (aspect ratio 1.586) ที่กึ่งกลางหน้าจอ
+  /// หน้าจอแนวตั้ง — กรอบวางในแนวนอน (บัตรหมุน 90°) ให้เต็มความกว้าง
   static Rect _calcFrameRect(Size screen) {
     const cardRatio = 1.586; // 85.6mm / 53.98mm
-    const horizontalPad = 0.08; // 8% จากขอบซ้าย-ขวา
+    const horizontalPad = 0.06; // 6% จากขอบซ้าย-ขวา
 
     final frameW = screen.width * (1 - horizontalPad * 2);
     final frameH = frameW / cardRatio;
     final left = screen.width * horizontalPad;
-    final top = (screen.height - frameH) / 2;
+    // วางกรอบที่ 35% จากบน (เหนือกึ่งกลางเล็กน้อย เพื่อเว้นที่ปุ่มถ่าย)
+    final top = screen.height * 0.35 - frameH / 2;
 
     return Rect.fromLTWH(left, top, frameW, frameH);
   }

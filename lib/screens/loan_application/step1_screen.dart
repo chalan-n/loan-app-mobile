@@ -118,10 +118,69 @@ class _Step1ScreenState extends State<Step1Screen> {
   String _ocrError = '';
   final ImagePicker _imagePicker = ImagePicker();
 
+  // ─── Reference Data (จาก Server) ───────────────────────────
+  List<String> _titleNames = ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'];
+  List<String> _occupationNames = [];
+  List<String> _religionNames = [];
+  List<String> _ethnicityNames = [];
+  List<String> _nationalityNames = [];
+  bool _refDataLoaded = false;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadRefData();
+  }
+
+  // ─── โหลด Reference Data จาก Server ──────────────────────
+  Future<void> _loadRefData() async {
+    if (_refDataLoaded) return;
+    try {
+      final results = await Future.wait([
+        ApiService.getTitles(),
+        ApiService.getOccupations(),
+        ApiService.getReligions(),
+        ApiService.getRaces(),
+        ApiService.getNations(),
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        final titles = results[0];
+        if (titles.isNotEmpty) {
+          _titleNames = titles.map((e) => e.name).toList();
+          // ถ้า prefix ปัจจุบันไม่อยู่ในรายการ ให้ใช้ตัวแรก
+          if (!_titleNames.contains(_prefix) && _titleNames.isNotEmpty) {
+            _prefix = _titleNames.first;
+          }
+        }
+
+        final occupations = results[1];
+        if (occupations.isNotEmpty) {
+          _occupationNames = occupations.map((e) => e.name).toList();
+        }
+
+        final religions = results[2];
+        if (religions.isNotEmpty) {
+          _religionNames = ['', ...religions.map((e) => e.name)];
+        }
+
+        final races = results[3];
+        if (races.isNotEmpty) {
+          _ethnicityNames = ['', ...races.map((e) => e.name)];
+        }
+
+        final nations = results[4];
+        if (nations.isNotEmpty) {
+          _nationalityNames = ['', ...nations.map((e) => e.name)];
+        }
+
+        _refDataLoaded = true;
+      });
+    } catch (e) {
+      debugPrint('⚠️ [Step1] loadRefData error: $e');
+    }
   }
 
   void _load() {
@@ -570,8 +629,7 @@ class _Step1ScreenState extends State<Step1Screen> {
               ],
               SizedBox(height: 12.h),
               // ─── ฟิลด์ข้อมูลส่วนตัว ────────────────
-              _dropdown('คำนำหน้า', _prefix,
-                  ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'],
+              _dropdown('คำนำหน้า', _prefix, _titleNames,
                   (v) => setState(() => _prefix = v!)),
               _field('ชื่อ *', _firstNameCtrl),
               _field('นามสกุล *', _lastNameCtrl),
@@ -698,10 +756,14 @@ class _Step1ScreenState extends State<Step1Screen> {
             title: 'ข้อมูลที่ทำงาน',
             children: [
               _field('ชื่อบริษัท', _companyCtrl),
-              _dropdown('อาชีพ', _occupation,
-                  ['', 'พนักงานบริษัทเอกชน', 'ข้าราชการ', 'ธุรกิจส่วนตัว',
-                   'เกษตรกร', 'รับจ้างทั่วไป', 'อื่นๆ'],
-                  (v) => setState(() => _occupation = v!)),
+              _dropdown(
+                'อาชีพ',
+                _occupation,
+                _occupationNames.isEmpty
+                    ? ['', 'พนักงานบริษัทเอกชน', 'ข้าราชการ', 'ธุรกิจส่วนตัว', 'เกษตรกร', 'รับจ้างทั่วไป', 'อื่นๆ']
+                    : ['', ..._occupationNames],
+                (v) => setState(() => _occupation = v!),
+              ),
               _field('ตำแหน่ง', _positionCtrl),
               _field('เงินเดือน', _salaryCtrl,
                   kb: TextInputType.number),

@@ -896,6 +896,180 @@ class ApiService {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // 📋 Reference Data APIs — ดึงข้อมูลอ้างอิงจาก Backend
+  // ─────────────────────────────────────────────────────────────────
+
+  /// ดึงรายชื่อคำนำหน้า GET /api/titles → [{TitleID, TitleName, TitleType}]
+  static Future<List<RefItem>> getTitles() async {
+    return _fetchRefData('/api/titles', (j) => RefItem(
+      id: j['TitleID']?.toString() ?? '',
+      name: j['TitleName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อเชื้อชาติ GET /api/races → [{RaceID, RaceName}]
+  static Future<List<RefItem>> getRaces() async {
+    return _fetchRefData('/api/races', (j) => RefItem(
+      id: j['RaceID']?.toString() ?? '',
+      name: j['RaceName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อสัญชาติ GET /api/nations → [{NationId, NationName}]
+  static Future<List<RefItem>> getNations() async {
+    return _fetchRefData('/api/nations', (j) => RefItem(
+      id: j['NationId']?.toString() ?? '',
+      name: j['NationName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อศาสนา GET /api/religions → [{ReligionID, ReligionName}]
+  static Future<List<RefItem>> getReligions() async {
+    return _fetchRefData('/api/religions', (j) => RefItem(
+      id: j['ReligionID']?.toString() ?? '',
+      name: j['ReligionName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อสถานภาพ GET /api/situations → [{SituationID, SituationName}]
+  static Future<List<RefItem>> getSituations() async {
+    return _fetchRefData('/api/situations', (j) => RefItem(
+      id: j['SituationID']?.toString() ?? '',
+      name: j['SituationName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่ออาชีพ GET /api/occupations → [{OccupyID, OccupyName}]
+  static Future<List<RefItem>> getOccupations() async {
+    return _fetchRefData('/api/occupations', (j) => RefItem(
+      id: j['OccupyID']?.toString() ?? '',
+      name: j['OccupyName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อบริษัทประกันชีวิต GET /api/insucomps → [{CompanyID, CompanyName}]
+  static Future<List<RefItem>> getInsuComps() async {
+    return _fetchRefData('/api/insucomps', (j) => RefItem(
+      id: j['CompanyID']?.toString() ?? '',
+      name: j['CompanyName']?.toString() ?? '',
+    ));
+  }
+
+  /// ดึงรายชื่อชั้นประกันรถ GET /api/insuclasses → [{ClassID, ClassName}]
+  static Future<List<RefItem>> getInsuClasses() async {
+    return _fetchRefData('/api/insuclasses', (j) => RefItem(
+      id: j['ClassID']?.toString() ?? '',
+      name: j['ClassName']?.toString() ?? '',
+    ));
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 📁 File Upload APIs — อัปโหลด/ลบไฟล์ประกันภัยรถ (Cloudflare R2)
+  // ─────────────────────────────────────────────────────────────────
+
+  /// 📤 อัปโหลดไฟล์ประกันภัยรถ POST /api/upload-insurance-file
+  /// ต้องใส่ loan_id ใน Cookie ก่อน (server ใช้ cookie เพื่อระบุ loan)
+  /// คืน filename ที่เก็บบน R2 และ URL สำหรับดาวน์โหลด
+  static Future<Map<String, String>> uploadInsuranceFile(File file) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/api/upload-insurance-file');
+      final request = http.MultipartRequest('POST', uri);
+
+      if (_rawCookie != null && _rawCookie!.isNotEmpty) {
+        request.headers['Cookie'] = _rawCookie!;
+      }
+      if (_token != null && _token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $_token';
+      }
+
+      final ext = file.path.split('.').last.toLowerCase();
+      final mimeType = _getMimeType(ext);
+
+      // field name = "file" ตาม backend
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+        contentType: http.MediaType.parse(mimeType),
+      ));
+
+      debugPrint('📤 [Upload] Insurance file: ${file.path}');
+
+      final streamedResponse = await request.send()
+          .timeout(AppConfig.uploadTimeout);
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('📤 [Upload] Response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return {
+          'filename': data['filename']?.toString() ?? '',
+          'url': data['url']?.toString() ?? '',
+        };
+      } else if (response.statusCode == 401) {
+        throw Exception('session_expired');
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['error'] ?? 'อัปโหลดไฟล์ไม่สำเร็จ (${response.statusCode})');
+      }
+    } on SocketException {
+      throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    } on TimeoutException {
+      throw Exception('หมดเวลาเชื่อมต่อ กรุณาลองใหม่');
+    }
+  }
+
+  /// 🗑️ ลบไฟล์ประกันภัยรถ POST /api/delete-insurance-file
+  static Future<void> deleteInsuranceFile(String filename) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/delete-insurance-file'),
+        headers: _headers,
+        body: jsonEncode({'filename': filename}),
+      ).timeout(_timeout);
+
+      if (response.statusCode == 401) {
+        throw Exception('session_expired');
+      } else if (response.statusCode != 200) {
+        final data = jsonDecode(response.body);
+        throw Exception(data['error'] ?? 'ลบไฟล์ไม่สำเร็จ');
+      }
+    } on SocketException {
+      throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    } on TimeoutException {
+      throw Exception('หมดเวลาเชื่อมต่อ กรุณาลองใหม่');
+    }
+  }
+
+  /// 🔧 helper — ดึง reference data จาก endpoint ที่กำหนด
+  static Future<List<RefItem>> _fetchRefData(
+    String path,
+    RefItem Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl$path'),
+        headers: _headers,
+      ).timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(response.body);
+        return list
+            .whereType<Map<String, dynamic>>()
+            .map(fromJson)
+            .where((item) => item.name.isNotEmpty)
+            .toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('session_expired');
+      }
+      return [];
+    } catch (e) {
+      debugPrint('⚠️ [RefData] $path error: $e');
+      return [];
+    }
+  }
+
   /// 🔧 helper — แปลงนามสกุลไฟล์เป็น MIME type
   static String _getMimeType(String ext) {
     switch (ext) {
@@ -1030,4 +1204,19 @@ class IDCardOcrData {
       religion: json['religion'] ?? '',
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 📋 Reference Data Model
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// ใช้สำหรับ dropdown ข้อมูลอ้างอิงทั่วไป เช่น คำนำหน้า, เชื้อชาติ, ศาสนา
+class RefItem {
+  final String id;
+  final String name;
+
+  const RefItem({required this.id, required this.name});
+
+  @override
+  String toString() => name;
 }

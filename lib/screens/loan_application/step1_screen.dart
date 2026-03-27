@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
+import '../../utils/image_preprocessor.dart';
 
 /// 👤 Step 1 — ข้อมูลผู้เช่าซื้อ (ตรงตามภาพ reference)
 class Step1Screen extends StatefulWidget {
@@ -358,8 +359,8 @@ class _Step1ScreenState extends State<Step1Screen> {
     try {
       final picked = await _imagePicker.pickImage(
         source: source,
-        imageQuality: 85,
-        maxWidth: 1920,
+        imageQuality: 92,
+        maxWidth: 2048,
       );
       if (picked == null) return;
 
@@ -368,7 +369,9 @@ class _Step1ScreenState extends State<Step1Screen> {
         _ocrError = '';
       });
 
-      final result = await ApiService.ocrIDCard(File(picked.path));
+      // ── Preprocess ภาพ (Contrast + Sharpen) ก่อนส่ง OCR ──────────
+      final imageFile = await ImagePreprocessor.preprocessIDCard(File(picked.path));
+      final result = await ApiService.ocrIDCard(imageFile);
       final d = result.data;
 
       setState(() {

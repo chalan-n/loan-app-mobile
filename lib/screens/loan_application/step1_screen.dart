@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 import '../../utils/image_preprocessor.dart';
+import '../../widgets/id_card_camera_screen.dart';
 
 /// 👤 Step 1 — ข้อมูลผู้เช่าซื้อ (ตรงตามภาพ reference)
 class Step1Screen extends StatefulWidget {
@@ -354,23 +355,34 @@ class _Step1ScreenState extends State<Step1Screen> {
     } catch (_) {}
   }
 
-  // ─── OCR บัตรประชาชน ────────────────────────────────────
-  Future<void> _scanIDCard(ImageSource source) async {
+  // ─── OCR บัตรประชาชน (กล้อง custom พร้อมกรอบ) ────────────
+  Future<void> _scanIDCardFromCamera() async {
+    // เปิด custom camera screen พร้อมกรอบบัตรประชาชน
+    final imageFile = await IDCardCameraScreen.open(context);
+    if (imageFile == null) return;
+    await _runOcr(imageFile);
+  }
+
+  // ─── OCR บัตรประชาชน (จากคลังรูปภาพ) ────────────────────
+  Future<void> _scanIDCardFromGallery() async {
+    final picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 92,
+      maxWidth: 2048,
+    );
+    if (picked == null) return;
+    await _runOcr(File(picked.path));
+  }
+
+  // ─── ประมวลผล OCR (ใช้ร่วมกันทั้ง camera และ gallery) ───
+  Future<void> _runOcr(File rawFile) async {
+    setState(() {
+      _isOcrLoading = true;
+      _ocrError = '';
+    });
     try {
-      final picked = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 92,
-        maxWidth: 2048,
-      );
-      if (picked == null) return;
-
-      setState(() {
-        _isOcrLoading = true;
-        _ocrError = '';
-      });
-
       // ── Preprocess ภาพ (Contrast + Sharpen) ก่อนส่ง OCR ──────────
-      final imageFile = await ImagePreprocessor.preprocessIDCard(File(picked.path));
+      final imageFile = await ImagePreprocessor.preprocessIDCard(rawFile);
       final result = await ApiService.ocrIDCard(imageFile);
       final d = result.data;
 
@@ -406,8 +418,8 @@ class _Step1ScreenState extends State<Step1Screen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
-              Icon(Icons.check_circle, color: Colors.white, size: 20),
-              SizedBox(width: 8),
+              const Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 8.w),
               Text(
                 result.idValid
                     ? 'OCR สำเร็จ — บัตรประชาชนถูกต้อง'
@@ -433,8 +445,8 @@ class _Step1ScreenState extends State<Step1Screen> {
     }
   }
 
-  // ─── แสดง bottom sheet เลือกแหล่งรูป ────────────────────
-  void _showImageSourceSheet(Future<void> Function(ImageSource) onPick) {
+  // ─── แสดง bottom sheet สแกนบัตรประชาชน (custom camera) ──
+  void _showIDCardSourceSheet() {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -455,19 +467,23 @@ class _Step1ScreenState extends State<Step1Screen> {
                 ),
               ),
               SizedBox(height: 16.h),
-              Text('เลือกรูปภาพจาก',
+              Text('สแกนบัตรประชาชน',
                   style: GoogleFonts.kanit(
                       fontSize: 16.sp, fontWeight: FontWeight.w600)),
+              SizedBox(height: 4.h),
+              Text('เลือกวิธีรับภาพบัตรประชาชน',
+                  style: GoogleFonts.kanit(
+                      fontSize: 13.sp, color: const Color(0xFF94a3b8))),
               SizedBox(height: 16.h),
               Row(
                 children: [
                   Expanded(
                     child: _sheetOption(
-                      icon: FontAwesomeIcons.camera,
-                      label: 'กล้อง',
+                      icon: FontAwesomeIcons.idCard,
+                      label: 'ถ่ายบัตร (พร้อมกรอบ)',
                       onTap: () {
                         Navigator.pop(context);
-                        onPick(ImageSource.camera);
+                        _scanIDCardFromCamera();
                       },
                     ),
                   ),
@@ -478,7 +494,7 @@ class _Step1ScreenState extends State<Step1Screen> {
                       label: 'คลังรูปภาพ',
                       onTap: () {
                         Navigator.pop(context);
-                        onPick(ImageSource.gallery);
+                        _scanIDCardFromGallery();
                       },
                     ),
                   ),
@@ -605,7 +621,7 @@ class _Step1ScreenState extends State<Step1Screen> {
               _ocrButton(
                 label: 'สแกนบัตรประชาชน (AI)',
                 icon: FontAwesomeIcons.idCard,
-                onTap: () => _showImageSourceSheet(_scanIDCard),
+                onTap: () => _showIDCardSourceSheet(),
               ),
               if (_ocrError.isNotEmpty) ...[
                 SizedBox(height: 8.h),

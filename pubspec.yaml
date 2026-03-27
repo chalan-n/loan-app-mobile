@@ -57,6 +57,9 @@ dependencies:
   # Image Processing (Preprocessing ก่อนส่ง OCR)
   image: ^4.1.7
   path_provider: ^2.1.2
+
+  # Camera (Custom camera screen พร้อม overlay)
+  camera: ^0.11.0
   
   # Glassmorphism & UI Effects
   glassmorphism: ^3.0.0

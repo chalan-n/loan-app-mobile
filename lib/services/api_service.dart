@@ -602,9 +602,10 @@ class ApiService {
   /// 🚗 ค้นหาข้อมูลรถจากรหัสรถ (car_code)
   static Future<Map<String, dynamic>> searchCarData(String carCode) async {
     try {
-      final response = await _sendRequest(() => http.get(
-        Uri.parse('$_baseUrl/api/cars/$carCode'),
+      final response = await _sendRequest(() => http.post(
+        Uri.parse('$_baseUrl/api/search-car'),
         headers: _headers,
+        body: jsonEncode({'car_code': carCode.toUpperCase()}),
       ));
 
       if (response.statusCode == 200) {
@@ -766,5 +767,267 @@ class ApiService {
     } catch (e) {
       debugPrint('Device registration error: $e');
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 📸 OCR APIs — เชื่อมต่อกับ Gemini AI ผ่าน Backend
+  // POST /api/v1/ocr/vehicle — อ่านข้อมูลจากเล่มทะเบียนรถ
+  // POST /api/v1/ocr/idcard  — อ่านข้อมูลจากบัตรประชาชน
+  // ─────────────────────────────────────────────────────────────────
+
+  /// 🚗 OCR เล่มทะเบียนรถ
+  /// ส่งรูปภาพไปยัง /api/v1/ocr/vehicle
+  /// คืน VehicleOcrResult พร้อมข้อมูลรถที่ Gemini AI อ่านได้
+  static Future<VehicleOcrResult> ocrVehicleBook(File imageFile, {String branch = ''}) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/api/v1/ocr/vehicle');
+      final request = http.MultipartRequest('POST', uri);
+
+      // ใส่ Cookie สำหรับ Authentication
+      if (_rawCookie != null && _rawCookie!.isNotEmpty) {
+        request.headers['Cookie'] = _rawCookie!;
+      }
+      if (_token != null && _token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $_token';
+      }
+
+      // กำหนด MIME type จากนามสกุลไฟล์
+      final ext = imageFile.path.split('.').last.toLowerCase();
+      final mimeType = _getMimeType(ext);
+
+      // แนบรูปภาพ (field name = "image" ตาม backend)
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: http.MediaType.parse(mimeType),
+      ));
+
+      // ส่ง branch ถ้ามี
+      if (branch.isNotEmpty) {
+        request.fields['branch'] = branch;
+      }
+
+      debugPrint('📸 [OCR] Vehicle - ส่งรูปภาพ: ${imageFile.path}');
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 60));
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('📸 [OCR] Vehicle - Response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return VehicleOcrResult.fromJson(data['data'] ?? {});
+        } else {
+          throw Exception(data['message'] ?? 'OCR ไม่สำเร็จ');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('session_expired');
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'เกิดข้อผิดพลาด (${response.statusCode})');
+      }
+    } on SocketException {
+      throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    } on TimeoutException {
+      throw Exception('หมดเวลาเชื่อมต่อ กรุณาลองใหม่');
+    }
+  }
+
+  /// 🪪 OCR บัตรประชาชน
+  /// ส่งรูปภาพไปยัง /api/v1/ocr/idcard
+  /// คืน IDCardOcrResult พร้อมข้อมูลบัตรประชาชนที่ Gemini AI อ่านได้
+  static Future<IDCardOcrResult> ocrIDCard(File imageFile, {String branch = ''}) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/api/v1/ocr/idcard');
+      final request = http.MultipartRequest('POST', uri);
+
+      // ใส่ Cookie สำหรับ Authentication
+      if (_rawCookie != null && _rawCookie!.isNotEmpty) {
+        request.headers['Cookie'] = _rawCookie!;
+      }
+      if (_token != null && _token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $_token';
+      }
+
+      // กำหนด MIME type จากนามสกุลไฟล์
+      final ext = imageFile.path.split('.').last.toLowerCase();
+      final mimeType = _getMimeType(ext);
+
+      // แนบรูปภาพ (field name = "image" ตาม backend)
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: http.MediaType.parse(mimeType),
+      ));
+
+      // ส่ง branch ถ้ามี
+      if (branch.isNotEmpty) {
+        request.fields['branch'] = branch;
+      }
+
+      debugPrint('📸 [OCR] IDCard - ส่งรูปภาพ: ${imageFile.path}');
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 60));
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('📸 [OCR] IDCard - Response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return IDCardOcrResult(
+            data: IDCardOcrData.fromJson(data['data'] ?? {}),
+            idValid: data['id_valid'] ?? false,
+          );
+        } else {
+          throw Exception(data['message'] ?? 'OCR ไม่สำเร็จ');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('session_expired');
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'เกิดข้อผิดพลาด (${response.statusCode})');
+      }
+    } on SocketException {
+      throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    } on TimeoutException {
+      throw Exception('หมดเวลาเชื่อมต่อ กรุณาลองใหม่');
+    }
+  }
+
+  /// 🔧 helper — แปลงนามสกุลไฟล์เป็น MIME type
+  static String _getMimeType(String ext) {
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 📦 OCR Data Models
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// ผลลัพธ์จาก OCR เล่มทะเบียนรถ
+class VehicleOcrResult {
+  final String registrationDate;
+  final String plateNumber;
+  final String province;
+  final String vehicleBrand;
+  final String chassisNumber;
+  final String engineNumber;
+  final int modelYear;
+  final String color;
+  final int engineCC;
+  final int carWeight;
+
+  const VehicleOcrResult({
+    this.registrationDate = '',
+    this.plateNumber = '',
+    this.province = '',
+    this.vehicleBrand = '',
+    this.chassisNumber = '',
+    this.engineNumber = '',
+    this.modelYear = 0,
+    this.color = '',
+    this.engineCC = 0,
+    this.carWeight = 0,
+  });
+
+  factory VehicleOcrResult.fromJson(Map<String, dynamic> json) {
+    return VehicleOcrResult(
+      registrationDate: json['registration_date'] ?? '',
+      plateNumber: json['plate_number'] ?? '',
+      province: json['province'] ?? '',
+      vehicleBrand: json['vehicle_brand'] ?? '',
+      chassisNumber: json['chassis_number'] ?? '',
+      engineNumber: json['engine_number'] ?? '',
+      modelYear: (json['model_year'] is int) ? json['model_year'] : 0,
+      color: json['color'] ?? '',
+      engineCC: (json['engine_cc'] is int) ? json['engine_cc'] : 0,
+      carWeight: (json['car_weight'] is int) ? json['car_weight'] : 0,
+    );
+  }
+}
+
+/// ผลลัพธ์จาก OCR บัตรประชาชน (wrapper + validation flag)
+class IDCardOcrResult {
+  final IDCardOcrData data;
+  final bool idValid;
+
+  const IDCardOcrResult({required this.data, this.idValid = false});
+}
+
+/// ข้อมูลบัตรประชาชนที่อ่านได้จาก OCR
+class IDCardOcrData {
+  final String idNumber;
+  final String title;
+  final String firstName;
+  final String lastName;
+  final String dateOfBirth;
+  final String gender;
+  final String address;
+  final String houseNo;
+  final String moo;
+  final String soi;
+  final String road;
+  final String subdistrict;
+  final String district;
+  final String province;
+  final String zipcode;
+  final String issueDate;
+  final String expiryDate;
+  final String religion;
+
+  const IDCardOcrData({
+    this.idNumber = '',
+    this.title = '',
+    this.firstName = '',
+    this.lastName = '',
+    this.dateOfBirth = '',
+    this.gender = '',
+    this.address = '',
+    this.houseNo = '',
+    this.moo = '',
+    this.soi = '',
+    this.road = '',
+    this.subdistrict = '',
+    this.district = '',
+    this.province = '',
+    this.zipcode = '',
+    this.issueDate = '',
+    this.expiryDate = '',
+    this.religion = '',
+  });
+
+  factory IDCardOcrData.fromJson(Map<String, dynamic> json) {
+    return IDCardOcrData(
+      idNumber: json['id_number'] ?? '',
+      title: json['title'] ?? '',
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
+      dateOfBirth: json['date_of_birth'] ?? '',
+      gender: json['gender'] ?? '',
+      address: json['address'] ?? '',
+      houseNo: json['house_no'] ?? '',
+      moo: json['moo'] ?? '',
+      soi: json['soi'] ?? '',
+      road: json['road'] ?? '',
+      subdistrict: json['subdistrict'] ?? '',
+      district: json['district'] ?? '',
+      province: json['province'] ?? '',
+      zipcode: json['zipcode'] ?? '',
+      issueDate: json['issue_date'] ?? '',
+      expiryDate: json['expiry_date'] ?? '',
+      religion: json['religion'] ?? '',
+    );
   }
 }

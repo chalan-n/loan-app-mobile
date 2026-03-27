@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../services/api_service.dart';
 
 /// 👤 Step 1 — ข้อมูลผู้เช่าซื้อ (ตรงตามภาพ reference)
 class Step1Screen extends StatefulWidget {
@@ -109,6 +112,11 @@ class _Step1ScreenState extends State<Step1Screen> {
   bool _sameAsRegistered = false;
   String _deliveryChoice = 'registered';
   String _creditBureauResult = 'found';
+
+  // ─── OCR State ─────────────────────────────────────────────
+  bool _isOcrLoading = false;
+  String _ocrError = '';
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -286,6 +294,220 @@ class _Step1ScreenState extends State<Step1Screen> {
     } catch (_) {}
   }
 
+  // ─── OCR บัตรประชาชน ────────────────────────────────────
+  Future<void> _scanIDCard(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+      if (picked == null) return;
+
+      setState(() {
+        _isOcrLoading = true;
+        _ocrError = '';
+      });
+
+      final result = await ApiService.ocrIDCard(File(picked.path));
+      final d = result.data;
+
+      setState(() {
+        // auto-fill ข้อมูลส่วนตัว
+        if (d.title.isNotEmpty) _prefix = d.title;
+        if (d.firstName.isNotEmpty) _firstNameCtrl.text = d.firstName;
+        if (d.lastName.isNotEmpty) _lastNameCtrl.text = d.lastName;
+        if (d.idNumber.isNotEmpty) _idCardCtrl.text = d.idNumber;
+        if (d.gender.isNotEmpty) _gender = d.gender;
+        if (d.dateOfBirth.isNotEmpty) {
+          _dateOfBirthCtrl.text = d.dateOfBirth;
+          _calcAge(d.dateOfBirth);
+        }
+        if (d.issueDate.isNotEmpty) _idCardIssueDateCtrl.text = d.issueDate;
+        if (d.expiryDate.isNotEmpty) _idCardExpiryDateCtrl.text = d.expiryDate;
+
+        // auto-fill ที่อยู่ตามทะเบียนบ้าน
+        if (d.houseNo.isNotEmpty) _houseNoCtrl.text = d.houseNo;
+        if (d.moo.isNotEmpty) _mooCtrl.text = d.moo;
+        if (d.soi.isNotEmpty) _alleyCtrl.text = d.soi;
+        if (d.road.isNotEmpty) _roadCtrl.text = d.road;
+        if (d.subdistrict.isNotEmpty) _tambonCtrl.text = d.subdistrict;
+        if (d.district.isNotEmpty) _amphoeCtrl.text = d.district;
+        if (d.province.isNotEmpty) _provinceCtrl.text = d.province;
+        if (d.zipcode.isNotEmpty) _zipCtrl.text = d.zipcode;
+
+        _isOcrLoading = false;
+      });
+
+      // แสดงผลสำเร็จ
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Text(
+                result.idValid
+                    ? 'OCR สำเร็จ — บัตรประชาชนถูกต้อง'
+                    : 'OCR สำเร็จ — กรุณาตรวจสอบข้อมูล',
+                style: GoogleFonts.kanit(color: Colors.white),
+              ),
+            ]),
+            backgroundColor: result.idValid
+                ? const Color(0xFF059669)
+                : const Color(0xFFd97706),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isOcrLoading = false;
+        _ocrError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // ─── แสดง bottom sheet เลือกแหล่งรูป ────────────────────
+  void _showImageSourceSheet(Future<void> Function(ImageSource) onPick) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFe2e8f0),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('เลือกรูปภาพจาก',
+                  style: GoogleFonts.kanit(
+                      fontSize: 16.sp, fontWeight: FontWeight.w600)),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _sheetOption(
+                      icon: FontAwesomeIcons.camera,
+                      label: 'กล้อง',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onPick(ImageSource.camera);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _sheetOption(
+                      icon: FontAwesomeIcons.images,
+                      label: 'คลังรูปภาพ',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onPick(ImageSource.gallery);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFf8fafc),
+          borderRadius: BorderRadius.circular(12.r),
+          border:
+              Border.all(color: const Color(0xFFe2e8f0), width: 1.5),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: navy, size: 24.sp),
+            SizedBox(height: 8.h),
+            Text(label,
+                style: GoogleFonts.kanit(
+                    fontSize: 14.sp, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── OCR Button Widget ──────────────────────────────────
+  Widget _ocrButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: _isOcrLoading ? null : onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1e3a8a), Color(0xFF1e40af)],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1e3a8a).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isOcrLoading)
+              SizedBox(
+                width: 18.sp,
+                height: 18.sp,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              )
+            else
+              Icon(icon, color: Colors.white, size: 18.sp),
+            SizedBox(width: 10.w),
+            Text(
+              _isOcrLoading ? 'กำลังวิเคราะห์...' : label,
+              style: GoogleFonts.kanit(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ════════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
@@ -317,6 +539,37 @@ class _Step1ScreenState extends State<Step1Screen> {
             icon: FontAwesomeIcons.idCard,
             title: 'ข้อมูลส่วนตัว',
             children: [
+              // ─── ปุ่ม OCR บัตรประชาชน ───────────────
+              _ocrButton(
+                label: 'สแกนบัตรประชาชน (AI)',
+                icon: FontAwesomeIcons.idCard,
+                onTap: () => _showImageSourceSheet(_scanIDCard),
+              ),
+              if (_ocrError.isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFfef2f2),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: const Color(0xFFfca5a5)),
+                  ),
+                  child: Row(children: [
+                    Icon(Icons.error_outline,
+                        color: const Color(0xFFdc2626), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(_ocrError,
+                          style: GoogleFonts.kanit(
+                              fontSize: 13.sp,
+                              color: const Color(0xFFdc2626))),
+                    ),
+                  ]),
+                ),
+              ],
+              SizedBox(height: 12.h),
+              // ─── ฟิลด์ข้อมูลส่วนตัว ────────────────
               _dropdown('คำนำหน้า', _prefix,
                   ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'],
                   (v) => setState(() => _prefix = v!)),

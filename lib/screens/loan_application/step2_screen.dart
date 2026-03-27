@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 
 /// 🚗 Step 2 - ข้อมูลรถยนต์
@@ -138,6 +140,11 @@ class _Step2ScreenState extends State<Step2Screen> {
   // Animation controllers
   bool _showCarInfoSection = false;
   bool _showVatSection = false;
+
+  // ─── OCR State ─────────────────────────────────────────────
+  bool _isOcrLoading = false;
+  String _ocrError = '';
+  final ImagePicker _imagePicker = ImagePicker();
   bool _isLoading = false;
 
   @override
@@ -166,6 +173,201 @@ class _Step2ScreenState extends State<Step2Screen> {
         });
       }
     });
+  }
+
+  // ─── OCR เล่มทะเบียนรถ ────────────────────────────────
+  Future<void> _scanVehicleBook(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+      if (picked == null) return;
+
+      setState(() {
+        _isOcrLoading = true;
+        _ocrError = '';
+      });
+
+      final result = await ApiService.ocrVehicleBook(File(picked.path));
+
+      setState(() {
+        // auto-fill ข้อมูลรถ
+        if (result.vehicleBrand.isNotEmpty) _carBrand = result.vehicleBrand;
+        if (result.color.isNotEmpty) _carColor = result.color;
+        if (result.chassisNumber.isNotEmpty) _carChassisCtrl.text = result.chassisNumber;
+        if (result.engineNumber.isNotEmpty) _carEngineCtrl.text = result.engineNumber;
+        if (result.modelYear != 0) _carYearCtrl.text = result.modelYear.toString();
+        if (result.engineCC != 0) _carCCCtrl.text = result.engineCC.toString();
+        if (result.carWeight != 0) _carWeightCtrl.text = result.carWeight.toString();
+        if (result.plateNumber.isNotEmpty) _licensePlateCtrl.text = result.plateNumber;
+        if (result.province.isNotEmpty) _licenseProvince = result.province;
+        if (result.registrationDate.isNotEmpty) _carRegDateCtrl.text = result.registrationDate;
+
+        _isOcrLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(children: [
+              const Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'OCR สำเร็จ — กรุณาตรวจสอบข้อมูล',
+                  style: GoogleFonts.kanit(color: Colors.white),
+                ),
+              ),
+            ]),
+            backgroundColor: const Color(0xFF059669),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isOcrLoading = false;
+        _ocrError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // ─── แสดง bottom sheet เลือกแหล่งรูป ─────────────────
+  void _showImageSourceSheet(Future<void> Function(ImageSource) onPick) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFe2e8f0),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('เลือกรูปภาพจาก',
+                  style: GoogleFonts.kanit(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _sheetOption(
+                      icon: FontAwesomeIcons.camera,
+                      label: 'กล้อง',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onPick(ImageSource.camera);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _sheetOption(
+                      icon: FontAwesomeIcons.images,
+                      label: 'คลังรูปภาพ',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onPick(ImageSource.gallery);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFf8fafc),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFe2e8f0), width: 1.5),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: navy, size: 24.sp),
+            SizedBox(height: 8.h),
+            Text(label,
+                style: GoogleFonts.kanit(fontSize: 14.sp, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── OCR Button Widget ─────────────────────────────────
+  Widget _ocrButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: _isOcrLoading ? null : onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1e3a8a), Color(0xFF1e40af)],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1e3a8a).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isOcrLoading)
+              SizedBox(
+                width: 18.sp,
+                height: 18.sp,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              )
+            else
+              Icon(icon, color: Colors.white, size: 18.sp),
+            SizedBox(width: 10.w),
+            Text(
+              _isOcrLoading ? 'กำลังวิเคราะห์...' : label,
+              style: GoogleFonts.kanit(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _loadFromFormData() {
@@ -283,8 +485,40 @@ class _Step2ScreenState extends State<Step2Screen> {
               icon: FontAwesomeIcons.car,
               title: 'ข้อมูลรถ',
               children: [
-                _buildTextField('รหัสรถ', _carCodeCtrl),
-                // ปุ่มค้นหลัก
+                // ─── ปุ่ม OCR เล่มทะเบียนรถ ──────────────
+                _ocrButton(
+                  label: 'สแกนเล่มทะเบียนรถ (AI)',
+                  icon: FontAwesomeIcons.bookOpen,
+                  onTap: () => _showImageSourceSheet(_scanVehicleBook),
+                ),
+                if (_ocrError.isNotEmpty) ...[
+                  SizedBox(height: 8.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFfef2f2),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border:
+                          Border.all(color: const Color(0xFFfca5a5)),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.error_outline,
+                          color: const Color(0xFFdc2626), size: 16.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(_ocrError,
+                            style: GoogleFonts.kanit(
+                                fontSize: 13.sp,
+                                color: const Color(0xFFdc2626))),
+                      ),
+                    ]),
+                  ),
+                ],
+                SizedBox(height: 12.h),
+                // ─── ฟิลด์ข้อมูลรถ ────────────────────────
+                _buildTextField('รหัสรถ', _carCodeCtrl, isUppercase: true),
+                // ปุ่มค้นหาจากรหัสรถ
                 Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: SizedBox(
@@ -410,7 +644,7 @@ class _Step2ScreenState extends State<Step2Screen> {
   }
 
   Widget _buildTextField(String label, TextEditingController ctrl,
-      {TextInputType? keyboardType, bool readOnly = false, bool isDate = false}) {
+      {TextInputType? keyboardType, bool readOnly = false, bool isDate = false, bool isUppercase = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Column(
@@ -422,6 +656,8 @@ class _Step2ScreenState extends State<Step2Screen> {
             controller: ctrl,
             keyboardType: keyboardType,
             readOnly: readOnly || isDate,
+            textCapitalization: isUppercase ? TextCapitalization.characters : TextCapitalization.none,
+            inputFormatters: isUppercase ? [UpperCaseTextFormatter()] : null,
             onTap: isDate
                 ? () async {
                     final picked = await showDatePicker(
@@ -524,5 +760,15 @@ class _Step2ScreenState extends State<Step2Screen> {
     _carPriceCtrl.dispose();
     _vatRateCtrl.dispose();
     super.dispose();
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }
